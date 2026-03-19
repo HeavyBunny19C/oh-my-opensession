@@ -121,5 +121,5 @@ ${actions}
 </div>
   `;
 
-  return layout(title, body);
+  return layout(title, body, "home");
 }

@@ -1,9 +1,19 @@
 import { escapeHtml } from "../markdown.mjs";
 import { layout } from "./layout.mjs";
-import { pagination, sessionCard } from "./components.mjs";
+import { sessionCard } from "./components.mjs";
 import { t } from "../i18n.mjs";
 
-export function renderSessionsPage({ sessions = [], total = 0, limit = 30, offset = 0, query = "", note = "", range = "" } = {}) {
+export function renderSessionsPage({
+  sessions = [],
+  total = 0,
+  limit = 30,
+  offset = 0,
+  query = "",
+  note = "",
+  range = "",
+  totalMessages = 0,
+  deletedCount = 0
+} = {}) {
   const cards = sessions.length
     ? sessions.map((session) => sessionCard(session, false, { showCheckbox: true })).join("\n")
     : query
@@ -26,9 +36,55 @@ export function renderSessionsPage({ sessions = [], total = 0, limit = 30, offse
     return `<a href="${href}" class="range-btn${active}">${r.label}</a>`;
   }).join("");
   const filterBar = `<div class="range-filter">${rangeButtons}</div>`;
+  const dashboard = `
+    <section class="dashboard-grid">
+      <a href="#session-list" class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-file">sessions/</span>
+          <span class="dash-badge">db</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-line"><span class="ck">"name"</span>: <span class="cs">"${t("sessions.title")}"</span>,</div>
+          <div class="dash-line"><span class="ck">"count"</span>: <span class="cn">${total}</span><span class="cc"> // ${t("sessions.count").replace("{count}", total)}</span></div>
+        </div>
+        <div class="dash-card-footer">
+          <span class="dash-cmd">$ ls sessions</span>
+          <span class="dash-arrow">\u2192</span>
+        </div>
+      </a>
+      <a href="/stats" class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-file">stats.json</span>
+          <span class="dash-badge">api</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-line"><span class="ck">"name"</span>: <span class="cs">"${t("nav.stats")}"</span>,</div>
+          <div class="dash-line"><span class="ck">"messages"</span>: <span class="cn">${totalMessages}</span><span class="cc"> // ${t("stats.total_messages")}</span></div>
+        </div>
+        <div class="dash-card-footer">
+          <span class="dash-cmd">$ watch stats</span>
+          <span class="dash-arrow">\u2192</span>
+        </div>
+      </a>
+      <a href="/trash" class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-file">trash/</span>
+          <span class="dash-badge">sys</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-line"><span class="ck">"name"</span>: <span class="cs">"${t("nav.trash")}"</span>,</div>
+          <div class="dash-line"><span class="ck">"count"</span>: <span class="cn">${deletedCount}</span><span class="cc"> // ${t("trash.count").replace("{count}", deletedCount)}</span></div>
+        </div>
+        <div class="dash-card-footer">
+          <span class="dash-cmd">$ ls trash</span>
+          <span class="dash-arrow">\u2192</span>
+        </div>
+      </a>
+    </section>
+  `;
   
-  const pagerBase = query ? `/search?q=${encodeURIComponent(query)}` : (rangeParam ? `/?range=${rangeParam}` : "/");
   const body = `
+    ${!query ? dashboard : ""}
     <section class="page-header">
       <div class="page-header-row">
         <div>
@@ -53,8 +109,8 @@ export function renderSessionsPage({ sessions = [], total = 0, limit = 30, offse
     <section class="session-list" id="session-list">
       ${cards}
     </section>
-    ${pagination(total, limit, offset, pagerBase)}
+    ${total > limit ? `<div id="scroll-sentinel" data-offset="${offset + sessions.length}" data-total="${total}" data-range="${escapeHtml(range)}" data-query="${escapeHtml(query)}"></div>` : ""}
   `;
 
-  return layout(query ? t("sessions.search_title").replace("{query}", query) : t("sessions.title"), body);
+  return layout(query ? t("sessions.search_title").replace("{query}", query) : t("sessions.title"), body, query ? "search" : "home");
 }

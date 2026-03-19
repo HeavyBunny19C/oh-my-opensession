@@ -33,5 +33,5 @@ export function renderTrashPage({ sessions = [] }) {
     </section>
   `;
 
-  return layout(t("trash.title"), body);
+  return layout(t("trash.title"), body, "trash");
 }

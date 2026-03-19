@@ -18,7 +18,7 @@ import {
   getDailySessionCounts,
   getSessionsByIds
 } from "./db.mjs";
-import { setLocale, t, getLocale } from "./i18n.mjs";
+import { setLocale, getLocale } from "./i18n.mjs";
 import {
   toggleStar,
   renameSession,
@@ -344,13 +344,59 @@ export function startServer(config = getConfig()) {
       return;
     }
 
+    if (pathname === "/api/sessions") {
+      const apiLimit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 30), 100);
+      const apiOffset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
+      const range = url.searchParams.get("range") || "";
+      const query = url.searchParams.get("q") || "";
+      const metaMap = getAllMeta();
+      const excludedIds = getExcludedIds();
+
+      let sessions, total;
+      if (query) {
+        const results = getSearchResults(query, apiLimit, apiOffset);
+        sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
+        total = results.total;
+      } else {
+        const results = listSessions(apiLimit, apiOffset, "", range);
+        sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
+        total = results.total;
+      }
+
+      return json(res, {
+        sessions: sessions.map((s) => ({
+          id: s.id,
+          title: s.title || s.slug || s.id,
+          directory: s.directory || "",
+          time_updated: Number(s.time_updated) || 0,
+          summary_files: Number(s.summary_files) || 0,
+          summary_additions: Number(s.summary_additions) || 0,
+          summary_deletions: Number(s.summary_deletions) || 0,
+          starred: Boolean(s.starred)
+        })),
+        total,
+        offset: apiOffset,
+        hasMore: apiOffset + sessions.length < total
+      });
+    }
+
     if (pathname === "/") {
       const range = url.searchParams.get("range") || "";
       const { sessions, total } = listSessions(limit, offset, "", range);
       const metaMap = getAllMeta();
       const excludedIds = getExcludedIds();
       const enrichedSessions = enrichSessionList(sessions, metaMap, excludedIds);
-      send(res, 200, renderSessionsPage({ sessions: enrichedSessions, total, limit, offset, range }));
+      const overviewStats = getStats();
+      const deletedCount = getDeletedIds().length;
+      send(res, 200, renderSessionsPage({
+        sessions: enrichedSessions,
+        total,
+        limit,
+        offset,
+        range,
+        totalMessages: overviewStats.totalMessages,
+        deletedCount
+      }));
       return;
     }
 
