@@ -30,6 +30,20 @@ function ft(key) {
   return __I18N__[__LOCALE__]?.[key] ?? __I18N__.en[key] ?? key;
 }
 
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+  function updateToggleIcon() {
+    themeToggle.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+  updateToggleIcon();
+  themeToggle.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.theme = next;
+    updateToggleIcon();
+  });
+}
+
 document.addEventListener("click", (e) => {
   const header = e.target.closest(".expandable");
   if (!header) return;

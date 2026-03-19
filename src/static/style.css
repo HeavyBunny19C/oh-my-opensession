@@ -6,11 +6,18 @@
   --text-primary: #1a1a2e;
   --text-secondary: #4a4a6a;
   --text-muted: #8c8ca1;
-  --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --accent-color: #6366f1;
+  --accent-hover: #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
   --border-color: #e5e7eb;
   --success-color: #10b981;
   --error-color: #ef4444;
   --warning-color: #f59e0b;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning-border: #fde68a;
   
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -21,6 +28,68 @@
   
   /* Transitions */
   --transition-fast: 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1e293b;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-color: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-gradient: linear-gradient(135deg, var(--accent-color), #a78bfa);
+  --border-color: #334155;
+  --success-color: #4ade80;
+  --error-color: #f87171;
+  --warning-color: #fbbf24;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+  --error-bg: #451a1a;
+  --error-border: #7f1d1d;
+  --success-bg: #14532d;
+  --success-border: #166534;
+  --warning-border: #92400e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #1e293b;
+    --bg-secondary: #0f172a;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-color: #818cf8;
+    --accent-hover: #6366f1;
+    --accent-gradient: linear-gradient(135deg, var(--accent-color), #a78bfa);
+    --border-color: #334155;
+    --success-color: #4ade80;
+    --error-color: #f87171;
+    --warning-color: #fbbf24;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+    --error-bg: #451a1a;
+    --error-border: #7f1d1d;
+    --success-bg: #14532d;
+    --success-border: #166534;
+    --warning-border: #92400e;
+  }
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color var(--transition-fast);
+}
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
 }
 
 /* Layout */
@@ -78,7 +147,7 @@ body {
 
 .search-input:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--accent-color);
   background-color: var(--bg-primary);
 }
 
@@ -248,7 +317,7 @@ body {
 }
 
 .message-user {
-  border-left-color: #6366f1;
+  border-left-color: var(--accent-color);
 }
 
 .message-assistant {
@@ -266,7 +335,7 @@ body {
 
 .message-role {
   background: var(--accent-gradient);
-  color: white;
+  color: var(--bg-primary);
   padding: 2px 8px;
   border-radius: 9999px;
   font-size: 11px;
@@ -321,13 +390,13 @@ body {
 }
 
 .message-body.markdown a {
-  color: #6366f1;
+  color: var(--accent-color);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 .message-body.markdown a:hover {
-  color: #8b5cf6;
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 
@@ -406,7 +475,7 @@ code {
 }
 
 .tool-name {
-  color: #6366f1;
+  color: var(--accent-color);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-weight: 600;
   font-size: 13px;
@@ -440,7 +509,7 @@ code {
 }
 
 .tool-status-error summary {
-  background-color: #fef2f2;
+  background-color: var(--error-bg);
 }
 
 details[open] summary {
@@ -537,7 +606,7 @@ details[open] summary {
 
 .pagination-link.active {
   background: var(--accent-gradient);
-  color: white;
+  color: var(--bg-primary);
   border-color: transparent;
 }
 
@@ -577,7 +646,7 @@ mark {
   margin-bottom: 32px;
 }
 .stat-card {
-  background: #fff;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
@@ -596,7 +665,7 @@ mark {
   color: var(--text-primary);
 }
 .chart-section {
-  background: #fff;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 24px;
@@ -641,12 +710,12 @@ mark {
 
 .range-btn:hover {
   color: var(--text-primary);
-  border-color: #6366f1;
+  border-color: var(--accent-color);
 }
 
 .range-btn.active {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+  background: var(--accent-gradient);
+  color: var(--bg-primary);
   border-color: transparent;
 }
 
@@ -670,7 +739,7 @@ pre code.hljs {
 }
 .sidebar {
   border-right: 1px solid var(--border-color);
-  background: #fff;
+  background: var(--bg-primary);
   overflow-y: auto;
   max-height: calc(100vh - 56px);
   position: sticky;
@@ -680,7 +749,7 @@ pre code.hljs {
   padding: 16px 16px 8px;
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   z-index: 1;
 }
@@ -697,7 +766,7 @@ pre code.hljs {
 }
 .sidebar .session-card.active {
   background: var(--bg-secondary);
-  border-left: 3px solid #6366f1;
+  border-left: 3px solid var(--accent-color);
 }
 .main-content {
   padding: 24px;
@@ -747,11 +816,11 @@ pre code.hljs {
 }
 
 .star-btn:hover {
-  color: #f59e0b;
+  color: var(--warning-color);
 }
 
 .star-btn.starred {
-  color: #f59e0b;
+  color: var(--warning-color);
   opacity: 1;
 }
 
@@ -888,20 +957,20 @@ pre code.hljs {
 
 .btn-danger {
   color: var(--error-color);
-  border-color: #fecaca;
+  border-color: var(--error-border);
 }
 
 .btn-danger:hover {
-  background: #fef2f2;
+  background: var(--error-bg);
 }
 
 .btn-restore {
   color: var(--success-color);
-  border-color: #a7f3d0;
+  border-color: var(--success-border);
 }
 
 .btn-restore:hover {
-  background: #ecfdf5;
+  background: var(--success-bg);
 }
 
 /* page-header 行布局 */
@@ -936,17 +1005,17 @@ pre code.hljs {
 }
 
 .action-btn.starred {
-  color: #f59e0b;
-  border-color: #fde68a;
+  color: var(--warning-color);
+  border-color: var(--warning-border);
 }
 
 .action-btn.btn-danger {
   color: var(--error-color);
-  border-color: #fecaca;
+  border-color: var(--error-border);
 }
 
 .action-btn.btn-danger:hover {
-  background: #fef2f2;
+  background: var(--error-bg);
 }
 
 /* 回收站卡片 */

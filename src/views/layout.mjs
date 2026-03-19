@@ -8,6 +8,7 @@ export function layout(title, body) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)} — ${t("nav.title")}</title>
+   <script>document.documentElement.dataset.theme=localStorage.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')</script>
    <link rel="stylesheet" href="/static/style.css">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
 </head>
@@ -19,6 +20,7 @@ export function layout(title, body) {
     <form class="search-form" action="/search" method="GET">
       <input type="text" name="q" placeholder="${t("nav.search_placeholder")}" class="search-input" id="search-input">
     </form>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle theme">🌙</button>
   </nav>
   <main class="content">
     ${body}
