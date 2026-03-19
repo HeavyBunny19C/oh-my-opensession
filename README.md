@@ -65,7 +65,7 @@ Management metadata (stars, renames, soft deletes) is stored in a separate `meta
 
 ## Donate
 
-If this project helps you, consider buying me a coffee :)
+If this project helps you, consider buying me a Mixue :)
 
 <p align="center">
   <img src="./docs/wechat-pay.jpeg" alt="WeChat Pay" width="250" />
