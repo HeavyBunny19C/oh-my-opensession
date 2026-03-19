@@ -1,6 +1,6 @@
 {
   "name": "oh-my-opensession",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A web-based session viewer and manager for OpenCode — browse, search, star, rename, delete, export your AI coding sessions.",
   "type": "module",
   "bin": {
