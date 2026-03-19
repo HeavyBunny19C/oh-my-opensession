@@ -63,6 +63,19 @@ Management metadata (stars, renames, soft deletes) is stored in a separate `meta
 - macOS: `~/.config/oh-my-opensession/meta.db`
 - Windows: `%APPDATA%\oh-my-opensession\meta.db`
 
+## Donate
+
+If this project helps you, consider buying me a coffee :)
+
+<p align="center">
+  <img src="./docs/wechat-pay.jpeg" alt="WeChat Pay" width="250" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./docs/alipay.jpeg" alt="Alipay" width="250" />
+</p>
+<p align="center">
+  <sub>WeChat Pay &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Alipay</sub>
+</p>
+
 ## License
 
 MIT
