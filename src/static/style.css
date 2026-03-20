@@ -122,6 +122,50 @@ body {
   z-index: 100;
 }
 
+/* Provider Tabs */
+.provider-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+.provider-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.provider-tab:hover {
+  color: var(--text-primary);
+}
+
+.provider-tab.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.provider-icon {
+  font-size: 1rem;
+}
+
+/* Adjust main content when tabs are present */
+body:has(.provider-tabs) .content {
+  padding-top: 112px; /* 56px topbar + 44px tabs + 12px gap */
+}
+
 .logo {
   color: var(--text-primary);
   font-weight: 700;
