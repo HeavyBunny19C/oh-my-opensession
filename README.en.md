@@ -77,35 +77,27 @@ Ever caught yourself thinking—
 
 ---
 
-## 🚀 Quick Start
+## 🚀 3-Second Launch
 
-### Option 1: Run from Source (Recommended)
+```bash
+npx oh-my-opensession
+```
+
+> 💡 Open `http://localhost:3456` and start archaeologizing your AI coding journey!
+
+Want it permanent?
+
+```bash
+npm install -g oh-my-opensession
+oh-my-opensession --open  # auto-opens browser, for the lazy among us
+```
+
+Or run from source:
 
 ```bash
 git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
 cd oh-my-opensession
 npm start
-```
-
-> 💡 Open `http://localhost:3456` and start archaeologizing your AI coding journey!
-
-Want auto-open browser?
-
-```bash
-npm run dev  # same as npm start + --open
-```
-
-### Option 2: npx / Global Install (after npm publish)
-
-> ⚠️ **Note**: The npm package is not yet published. The commands below will work once it's live:
-
-```bash
-# One-off run (available after publish)
-npx oh-my-opensession
-
-# Global install (available after publish)
-npm install -g oh-my-opensession
-oh-my-opensession --open
 ```
 
 ---
@@ -284,7 +276,7 @@ npm run dev
 - **Runtime**: Node.js >= 22.5.0 (depends on built-in `node:sqlite` module)
 - **Dependencies**: Zero — no `npm install` needed
 - **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
-- **npm status**: NOT yet published to npm. `npx oh-my-opensession` does NOT work.
+- **npm**: Published. `npx oh-my-opensession` works out of the box.
 - **Default port**: 3456
 - **OpenCode DB location**:
   - macOS / Linux: `~/.local/share/opencode/opencode.db` (XDG-compliant, respects `$XDG_DATA_HOME`)
