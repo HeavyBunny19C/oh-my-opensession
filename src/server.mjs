@@ -19,7 +19,7 @@ import {
   getSessionsByIds
 } from "./db.mjs";
 import { getAvailableProviders, getProvider } from "./providers/index.mjs";
-import { getIndexDb, upsertIndex } from "./index-db.mjs";
+import { getIndexDb, upsertIndex, getIndexedSessions } from "./index-db.mjs";
 import { setLocale, getLocale } from "./i18n.mjs";
 import {
   toggleStar,
@@ -158,6 +158,106 @@ function loadPartsByMessage(messages) {
   return map;
 }
 
+function normalizeSessionRecord(session) {
+  if (!session) {
+    return null;
+  }
+
+  return {
+    ...session,
+    id: session.id,
+    title: session.title || session.slug || session.id,
+    directory: session.directory || "",
+    time_created: Number(session.time_created ?? session.timeCreated) || 0,
+    time_updated: Number(session.time_updated ?? session.timeUpdated) || 0,
+    summary_files: Number(session.summary_files) || 0,
+    summary_additions: Number(session.summary_additions) || 0,
+    summary_deletions: Number(session.summary_deletions) || 0,
+    starred: Boolean(session.starred)
+  };
+}
+
+function buildPartsFromProviderMessages(providerMessages = []) {
+  const messages = [];
+  const partsByMessage = new Map();
+
+  for (let i = 0; i < providerMessages.length; i += 1) {
+    const source = providerMessages[i] || {};
+    const messageId = source.id || `${source.sessionId || "session"}:msg:${i}`;
+    messages.push({
+      id: messageId,
+      data: {
+        role: source.role || "assistant",
+        time: { created: Number(source.timestamp) || 0 },
+        tokens: source.tokens || null,
+        model: source.metadata || null
+      }
+    });
+
+    const isTool = source.role === "tool" || source.toolName;
+    const partData = isTool
+      ? {
+        type: "tool",
+        tool: source.toolName || "tool",
+        state: {
+          input: source.toolInput || null,
+          output: source.toolOutput ?? source.content ?? "",
+          status: "completed"
+        }
+      }
+      : {
+        type: "text",
+        text: source.content || ""
+      };
+
+    partsByMessage.set(messageId, [{ id: `${messageId}:part`, data: partData }]);
+  }
+
+  return { messages, partsByMessage };
+}
+
+function getProviderSearchResults(adapter, query, limit, offset) {
+  const term = (query || "").trim();
+  if (!term) {
+    return { sessions: [], total: 0, note: "Enter a search query to find sessions." };
+  }
+
+  const matches = adapter.searchMessages(term, 500);
+  const orderedIds = [];
+  const sessionMap = new Map();
+
+  for (const match of matches) {
+    if (sessionMap.has(match.sessionId)) {
+      continue;
+    }
+    const session = adapter.getSession(match.sessionId);
+    if (!session) {
+      continue;
+    }
+    orderedIds.push(match.sessionId);
+    sessionMap.set(match.sessionId, normalizeSessionRecord(session));
+  }
+
+  return {
+    sessions: orderedIds.slice(offset, offset + limit).map((id) => sessionMap.get(id)).filter(Boolean),
+    total: orderedIds.length,
+    note: `Showing message-content matches for “${term}”.`
+  };
+}
+
+function toApiSessionShape(session) {
+  return {
+    id: session.id,
+    title: session.title || session.slug || session.id,
+    directory: session.directory || "",
+    time_updated: Number(session.time_updated) || 0,
+    summary_files: Number(session.summary_files) || 0,
+    summary_additions: Number(session.summary_additions) || 0,
+    summary_deletions: Number(session.summary_deletions) || 0,
+    starred: Boolean(session.starred)
+  };
+}
+
 function serveStatic(reqPath, res) {
   const relativePath = reqPath.replace(/^\/static\//, "");
   const filePath = path.join(staticDir, relativePath);
@@ -232,10 +332,56 @@ export async function startServer(config = getConfig()) {
     const limit = 30;
     const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
 
-    const sessionApiMatch = pathname.match(/^\/api\/session\/([^/]+)\/(star|rename|delete|restore|permanent-delete)$/);
-    if (req.method === "POST" && sessionApiMatch) {
-      const id = decodeURIComponent(sessionApiMatch[1]);
-      const action = sessionApiMatch[2];
+    const availableProviders = getAvailableProviders();
+    const providerMap = new Map(availableProviders.map((provider) => [provider.id, provider]));
+    const providerInfo = availableProviders.map((provider) => ({
+      id: provider.id,
+      name: provider.name,
+      icon: provider.icon
+    }));
+
+    // Extract provider from URL: /:provider/...
+    const providerMatch = pathname.match(/^\/([a-z][a-z0-9-]*)(?:\/(.*))?$/);
+    const providerSegment = providerMatch?.[1];
+    const subPath = providerMatch?.[2] ? `/${providerMatch[2]}` : "/";
+
+    // Root redirect
+    if (pathname === "/") {
+      const defaultProvider = availableProviders[0];
+      if (defaultProvider) {
+        res.writeHead(302, { Location: `/${defaultProvider.id}` });
+        res.end();
+        return;
+      }
+      send(res, 500, "<h1>No providers detected</h1>");
+      return;
+    }
+
+    if (pathname === "/favicon.ico") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    if (pathname.startsWith("/static/")) {
+      serveStatic(pathname, res);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/api/providers") {
+      return json(res, providerInfo);
+    }
+
+    const prefixedMutationMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/session\/([^/]+)\/(star|rename|delete|restore|permanent-delete)$/);
+    const legacyMutationMatch = pathname.match(/^\/api\/session\/([^/]+)\/(star|rename|delete|restore|permanent-delete)$/);
+    if (req.method === "POST" && (prefixedMutationMatch || legacyMutationMatch)) {
+      const providerId = prefixedMutationMatch?.[1] || "opencode";
+      if (providerId !== "opencode") {
+        return json(res, { ok: false, error: "Not supported for this provider" }, 501);
+      }
+
+      const id = decodeURIComponent(prefixedMutationMatch?.[2] || legacyMutationMatch[1]);
+      const action = prefixedMutationMatch?.[3] || legacyMutationMatch[2];
       try {
         if (action === "star") {
           const starred = toggleStar(id);
@@ -263,7 +409,13 @@ export async function startServer(config = getConfig()) {
       }
     }
 
-    if (req.method === "POST" && pathname === "/api/batch") {
+    const prefixedBatchMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/batch$/);
+    if (req.method === "POST" && (pathname === "/api/batch" || prefixedBatchMatch)) {
+      const providerId = prefixedBatchMatch?.[1] || "opencode";
+      if (providerId !== "opencode") {
+        return json(res, { ok: false, error: "Not supported for this provider" }, 501);
+      }
+
       try {
         const body = await readBody(req);
         const ids = Array.isArray(body.ids) ? body.ids : [];
@@ -278,9 +430,23 @@ export async function startServer(config = getConfig()) {
       }
     }
 
-    if (req.method === "GET" && pathname === "/api/providers") {
-      const providers = getAvailableProviders().map((p) => ({ id: p.id, name: p.name, icon: p.icon }));
-      return json(res, providers);
+    if (req.method === "POST" && pathname === "/api/reindex") {
+      try {
+        getIndexDb();
+        const results = [];
+        for (const provider of availableProviders) {
+          const startTime = Date.now();
+          const sessions = [];
+          for await (const session of provider.scan()) {
+            sessions.push(session);
+          }
+          upsertIndex(provider.id, sessions);
+          results.push({ provider: provider.id, indexed: sessions.length, tookMs: Date.now() - startTime });
+        }
+        return json(res, { ok: true, results });
+      } catch (error) {
+        return json(res, { ok: false, error: error.message }, 500);
+      }
     }
 
     if (req.method !== "GET") {
@@ -288,35 +454,96 @@ export async function startServer(config = getConfig()) {
       return;
     }
 
-    if (pathname === "/favicon.ico") {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
-
-    if (pathname.startsWith("/static/")) {
-      serveStatic(pathname, res);
-      return;
-    }
-
-    if (pathname === "/api/stats") {
-      send(res, 200, JSON.stringify(getStats(), null, 2), "application/json; charset=utf-8");
-      return;
-    }
-
-    const exportMatch = pathname.match(/^\/api\/session\/([^/]+)\/export$/);
-    if (exportMatch) {
-      const id = decodeURIComponent(exportMatch[1]);
-      const format = url.searchParams.get("format") || "md";
-      const session = getSession(id);
-      if (!session) {
-        return json(res, { ok: false, error: "Not found" }, 404);
+    const apiSessionsMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/sessions$/);
+    if (apiSessionsMatch) {
+      const providerId = apiSessionsMatch[1];
+      const adapter = providerMap.get(providerId);
+      if (!adapter) {
+        return json(res, { ok: false, error: "Provider not found" }, 404);
       }
 
-      const metaMap = getAllMeta();
-      const enrichedSession = enrichSession(session, metaMap);
-      const messages = getMessages(id).map((message) => ({ ...message, data: safeJsonParse(message.data) }));
-      const partsByMessage = loadPartsByMessage(messages);
+      const apiLimit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 30), 100);
+      const apiOffset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
+      const range = url.searchParams.get("range") || "";
+      const query = url.searchParams.get("q") || "";
+
+      if (providerId === "opencode") {
+        const metaMap = getAllMeta();
+        const excludedIds = getExcludedIds();
+
+        let sessions;
+        let total;
+        if (query) {
+          const results = getSearchResults(query, apiLimit, apiOffset);
+          sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
+          total = results.total;
+        } else {
+          const results = listSessions(apiLimit, apiOffset, "", range);
+          sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
+          total = results.total;
+        }
+
+        return json(res, {
+          sessions: sessions.map((session) => toApiSessionShape(normalizeSessionRecord(session))),
+          total,
+          offset: apiOffset,
+          hasMore: apiOffset + sessions.length < total
+        });
+      }
+
+      let sessions;
+      let total;
+      if (query) {
+        const results = getProviderSearchResults(adapter, query, apiLimit, apiOffset);
+        sessions = results.sessions;
+        total = results.total;
+      } else {
+        const indexed = getIndexedSessions(providerId, apiLimit, apiOffset, range);
+        sessions = indexed.sessions.map((session) => normalizeSessionRecord(session));
+        total = indexed.total;
+      }
+
+      return json(res, {
+        sessions: sessions.map((session) => toApiSessionShape(session)),
+        total,
+        offset: apiOffset,
+        hasMore: apiOffset + sessions.length < total
+      });
+    }
+
+    const apiSessionExportMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/session\/([^/]+)\/export$/);
+    if (apiSessionExportMatch) {
+      const providerId = apiSessionExportMatch[1];
+      const id = decodeURIComponent(apiSessionExportMatch[2]);
+      const adapter = providerMap.get(providerId);
+      if (!adapter) {
+        return json(res, { ok: false, error: "Provider not found" }, 404);
+      }
+
+      const format = url.searchParams.get("format") || "md";
+      let session;
+      let messages;
+      let partsByMessage;
+
+      if (providerId === "opencode") {
+        const metaMap = getAllMeta();
+        const rawSession = getSession(id);
+        if (!rawSession) {
+          return json(res, { ok: false, error: "Not found" }, 404);
+        }
+        session = normalizeSessionRecord(enrichSession(rawSession, metaMap));
+        messages = getMessages(id).map((message) => ({ ...message, data: safeJsonParse(message.data) }));
+        partsByMessage = loadPartsByMessage(messages);
+      } else {
+        const rawSession = adapter.getSession(id);
+        if (!rawSession) {
+          return json(res, { ok: false, error: "Not found" }, 404);
+        }
+        session = normalizeSessionRecord(rawSession);
+        const mapped = buildPartsFromProviderMessages(adapter.getMessages(id));
+        messages = mapped.messages;
+        partsByMessage = mapped.partsByMessage;
+      }
 
       if (format === "json") {
         const filename = `session-${id.slice(0, 8)}.json`;
@@ -325,7 +552,7 @@ export async function startServer(config = getConfig()) {
           "Content-Disposition": `attachment; filename="${filename}"`
         });
         return res.end(JSON.stringify({
-          session: enrichedSession,
+          session,
           messages: messages.map((message) => ({
             ...message,
             parts: (partsByMessage.get(message.id) || []).map((part) => part.data)
@@ -333,7 +560,7 @@ export async function startServer(config = getConfig()) {
         }, null, 2));
       }
 
-      const md = renderMarkdownExport(enrichedSession, messages, partsByMessage);
+      const md = renderMarkdownExport(session, messages, partsByMessage);
       const filename = `session-${id.slice(0, 8)}.md`;
       res.writeHead(200, {
         "Content-Type": "text/markdown; charset=utf-8",
@@ -342,118 +569,234 @@ export async function startServer(config = getConfig()) {
       return res.end(md);
     }
 
-    if (pathname === "/stats") {
-      const tokenStats = getTokenStats(30);
-      const modelDistribution = getModelDistribution();
-      const dailySessions = getDailySessionCounts(30);
-      const overview = getStats();
-      send(res, 200, renderStatsPage({ tokenStats, modelDistribution, dailySessions, overview }));
-      return;
-    }
+    const apiSessionDetailMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/session\/([^/]+)$/);
+    if (apiSessionDetailMatch) {
+      const providerId = apiSessionDetailMatch[1];
+      const sessionId = decodeURIComponent(apiSessionDetailMatch[2]);
+      const adapter = providerMap.get(providerId);
+      if (!adapter) {
+        return json(res, { ok: false, error: "Provider not found" }, 404);
+      }
 
-    if (pathname === "/api/sessions") {
-      const apiLimit = Math.min(Math.max(1, Number(url.searchParams.get("limit")) || 30), 100);
-      const apiOffset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
-      const range = url.searchParams.get("range") || "";
-      const query = url.searchParams.get("q") || "";
-      const metaMap = getAllMeta();
-      const excludedIds = getExcludedIds();
+      if (providerId === "opencode") {
+        const metaMap = getAllMeta();
+        const session = getSession(sessionId);
+        if (!session) {
+          return json(res, { ok: false, error: "Not found" }, 404);
+        }
+        const enrichedSession = normalizeSessionRecord(enrichSession(session, metaMap));
+        const messages = getMessages(sessionId).map((message) => ({ ...message, data: safeJsonParse(message.data) }));
+        const partsByMessage = loadPartsByMessage(messages);
+        return json(res, {
+          session: enrichedSession,
+          messages: messages.map((message) => ({
+            ...message,
+            parts: (partsByMessage.get(message.id) || []).map((part) => part.data)
+          }))
+        });
+      }
 
-      let sessions, total;
-      if (query) {
-        const results = getSearchResults(query, apiLimit, apiOffset);
-        sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
-        total = results.total;
-      } else {
-        const results = listSessions(apiLimit, apiOffset, "", range);
-        sessions = enrichSessionList(results.sessions, metaMap, excludedIds);
-        total = results.total;
+      const session = adapter.getSession(sessionId);
+      if (!session) {
+        return json(res, { ok: false, error: "Not found" }, 404);
       }
 
       return json(res, {
-        sessions: sessions.map((s) => ({
-          id: s.id,
-          title: s.title || s.slug || s.id,
-          directory: s.directory || "",
-          time_updated: Number(s.time_updated) || 0,
-          summary_files: Number(s.summary_files) || 0,
-          summary_additions: Number(s.summary_additions) || 0,
-          summary_deletions: Number(s.summary_deletions) || 0,
-          starred: Boolean(s.starred)
-        })),
-        total,
-        offset: apiOffset,
-        hasMore: apiOffset + sessions.length < total
+        session: normalizeSessionRecord(session),
+        messages: adapter.getMessages(sessionId)
       });
     }
 
-    if (pathname === "/") {
+    const apiStatsMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/stats$/);
+    if (apiStatsMatch) {
+      const providerId = apiStatsMatch[1];
+      const adapter = providerMap.get(providerId);
+      if (!adapter) {
+        return json(res, { ok: false, error: "Provider not found" }, 404);
+      }
+
+      if (providerId === "opencode") {
+        return json(res, getStats());
+      }
+
+      const indexed = getIndexedSessions(providerId, 100000, 0, "").sessions;
+      const totalMessages = indexed.reduce((sum, session) => sum + (Number(session.message_count) || 0), 0);
+      return json(res, {
+        totalSessions: indexed.length,
+        totalMessages,
+        modelDistribution: []
+      });
+    }
+
+    if (!providerSegment) {
+      send(res, 404, "<h1>Not found</h1>");
+      return;
+    }
+
+    const currentProvider = getProvider(providerSegment);
+    const adapter = providerMap.get(providerSegment);
+    if (!currentProvider || !adapter) {
+      send(res, 404, "<h1>Provider not found</h1>");
+      return;
+    }
+
+    const renderContext = {
+      provider: providerSegment,
+      providers: providerInfo
+    };
+
+    if (subPath === "/") {
       const range = url.searchParams.get("range") || "";
-      const { sessions, total } = listSessions(limit, offset, "", range);
-      const metaMap = getAllMeta();
-      const excludedIds = getExcludedIds();
-      const enrichedSessions = enrichSessionList(sessions, metaMap, excludedIds);
-      const overviewStats = getStats();
-      const deletedCount = getDeletedIds().length;
+      if (providerSegment === "opencode") {
+        const { sessions, total } = listSessions(limit, offset, "", range);
+        const metaMap = getAllMeta();
+        const excludedIds = getExcludedIds();
+        const enrichedSessions = enrichSessionList(sessions, metaMap, excludedIds).map((session) => normalizeSessionRecord(session));
+        const overviewStats = getStats();
+        const deletedCount = getDeletedIds().length;
+        send(res, 200, renderSessionsPage({
+          sessions: enrichedSessions,
+          total,
+          limit,
+          offset,
+          range,
+          totalMessages: overviewStats.totalMessages,
+          deletedCount,
+          ...renderContext
+        }));
+        return;
+      }
+
+      const indexed = getIndexedSessions(providerSegment, limit, offset, range);
+      const allIndexed = getIndexedSessions(providerSegment, 100000, 0, "").sessions;
+      const totalMessages = allIndexed.reduce((sum, session) => sum + (Number(session.message_count) || 0), 0);
       send(res, 200, renderSessionsPage({
-        sessions: enrichedSessions,
-        total,
+        sessions: indexed.sessions.map((session) => normalizeSessionRecord(session)),
+        total: indexed.total,
         limit,
         offset,
         range,
-        totalMessages: overviewStats.totalMessages,
-        deletedCount
+        totalMessages,
+        deletedCount: 0,
+        ...renderContext
       }));
       return;
     }
 
-    if (pathname === "/search") {
+    if (subPath === "/search") {
       const query = url.searchParams.get("q") || "";
-      const results = getSearchResults(query, limit, offset);
-      const metaMap = getAllMeta();
-      const excludedIds = getExcludedIds();
-      const enrichedSessions = enrichSessionList(results.sessions, metaMap, excludedIds);
-      send(res, 200, renderSessionsPage({ ...results, sessions: enrichedSessions, limit, offset, query }));
+      if (providerSegment === "opencode") {
+        const results = getSearchResults(query, limit, offset);
+        const metaMap = getAllMeta();
+        const excludedIds = getExcludedIds();
+        const enrichedSessions = enrichSessionList(results.sessions, metaMap, excludedIds).map((session) => normalizeSessionRecord(session));
+        send(res, 200, renderSessionsPage({ ...results, sessions: enrichedSessions, limit, offset, query, ...renderContext }));
+        return;
+      }
+
+      const results = getProviderSearchResults(adapter, query, limit, offset);
+      send(res, 200, renderSessionsPage({ ...results, limit, offset, query, ...renderContext }));
       return;
     }
 
-    if (pathname === "/trash") {
+    if (subPath === "/stats") {
+      if (providerSegment === "opencode") {
+        const tokenStats = getTokenStats(30);
+        const modelDistribution = getModelDistribution();
+        const dailySessions = getDailySessionCounts(30);
+        const overview = getStats();
+        send(res, 200, renderStatsPage({ tokenStats, modelDistribution, dailySessions, overview, ...renderContext }));
+        return;
+      }
+
+      const indexed = getIndexedSessions(providerSegment, 100000, 0, "").sessions;
+      const tokenStats = adapter.getTokenStats(30).map((row) => ({
+        day: row.day,
+        input_tokens: Number(row.inputTokens) || 0,
+        output_tokens: Number(row.outputTokens) || 0,
+        total_tokens: Number(row.totalTokens) || 0,
+        message_count: Number(row.messageCount) || 0
+      }));
+      const dailyMap = new Map();
+      for (const session of indexed) {
+        const day = new Date(Number(session.time_created) || 0).toISOString().slice(0, 10);
+        dailyMap.set(day, (dailyMap.get(day) || 0) + 1);
+      }
+      const dailySessions = [...dailyMap.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([day, count]) => ({ day, count }));
+      const overview = {
+        totalSessions: indexed.length,
+        totalMessages: indexed.reduce((sum, session) => sum + (Number(session.message_count) || 0), 0)
+      };
+      send(res, 200, renderStatsPage({ tokenStats, modelDistribution: [], dailySessions, overview, ...renderContext }));
+      return;
+    }
+
+    if (subPath === "/trash") {
+      if (providerSegment !== "opencode") {
+        send(res, 404, "<h1>Not found</h1>");
+        return;
+      }
       const deletedIds = getDeletedIds();
       const sessions = getSessionsByIds(deletedIds);
       const metaMap = getAllMeta();
-      const enriched = sessions.map((session) => enrichSession(session, metaMap));
-      send(res, 200, renderTrashPage({ sessions: enriched }));
+      const enriched = sessions.map((session) => normalizeSessionRecord(enrichSession(session, metaMap)));
+      send(res, 200, renderTrashPage({ sessions: enriched, ...renderContext }));
       return;
     }
 
-    if (pathname.startsWith("/session/")) {
-      const sessionId = decodeURIComponent(pathname.slice("/session/".length));
-      const session = getSession(sessionId);
+    if (subPath.startsWith("/session/")) {
+      const sessionId = decodeURIComponent(subPath.slice("/session/".length));
 
+      if (providerSegment === "opencode") {
+        const session = getSession(sessionId);
+        if (!session) {
+          send(res, 404, "<h1>Session not found</h1>");
+          return;
+        }
+
+        const meta = getMeta(sessionId);
+        const metaMap = getAllMeta();
+        const excludedIds = getExcludedIds();
+        const enrichedSession = normalizeSessionRecord(enrichSession(session, metaMap));
+        const messages = getMessages(sessionId).map((message) => ({
+          ...message,
+          data: safeJsonParse(message.data)
+        }));
+        const partsByMessage = loadPartsByMessage(messages);
+        const todos = getTodos(sessionId);
+        const { sessions: recentSessions } = listSessions(30, 0);
+        const enrichedRecentSessions = enrichSessionList(recentSessions, metaMap, excludedIds).map((item) => normalizeSessionRecord(item));
+        send(res, 200, renderSessionPage({
+          session: enrichedSession,
+          messages,
+          partsByMessage,
+          todos,
+          recentSessions: enrichedRecentSessions,
+          meta,
+          ...renderContext
+        }));
+        return;
+      }
+
+      const session = adapter.getSession(sessionId);
       if (!session) {
         send(res, 404, "<h1>Session not found</h1>");
         return;
       }
 
-      const meta = getMeta(sessionId);
-      const metaMap = getAllMeta();
-      const excludedIds = getExcludedIds();
-      const enrichedSession = enrichSession(session, metaMap);
-      const messages = getMessages(sessionId).map((message) => ({
-        ...message,
-        data: safeJsonParse(message.data)
-      }));
-      const partsByMessage = loadPartsByMessage(messages);
-      const todos = getTodos(sessionId);
-      const { sessions: recentSessions } = listSessions(30, 0);
-      const enrichedRecentSessions = enrichSessionList(recentSessions, metaMap, excludedIds);
+      const providerMessages = adapter.getMessages(sessionId);
+      const { messages, partsByMessage } = buildPartsFromProviderMessages(providerMessages);
+      const recentSessions = getIndexedSessions(providerSegment, 30, 0, "").sessions.map((item) => normalizeSessionRecord(item));
       send(res, 200, renderSessionPage({
-        session: enrichedSession,
+        session: normalizeSessionRecord(session),
         messages,
         partsByMessage,
-        todos,
-        recentSessions: enrichedRecentSessions,
-        meta
+        todos: [],
+        recentSessions,
+        meta: null,
+        ...renderContext
       }));
       return;
     }
