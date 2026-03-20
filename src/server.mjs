@@ -18,6 +18,8 @@ import {
   getDailySessionCounts,
   getSessionsByIds
 } from "./db.mjs";
+import { getAvailableProviders, getProvider } from "./providers/index.mjs";
+import { getIndexDb, upsertIndex } from "./index-db.mjs";
 import { setLocale, getLocale } from "./i18n.mjs";
 import {
   toggleStar,
@@ -219,7 +221,7 @@ function renderMarkdownExport(session, messages, partsByMessage) {
   return lines.join("\n");
 }
 
-export function startServer(config = getConfig()) {
+export async function startServer(config = getConfig()) {
   const appConfig = config ?? getConfig();
   setLocale(appConfig.lang);
   const PORT = appConfig.port;
@@ -274,6 +276,11 @@ export function startServer(config = getConfig()) {
       } catch (error) {
         return json(res, { ok: false, error: error.message }, 500);
       }
+    }
+
+    if (req.method === "GET" && pathname === "/api/providers") {
+      const providers = getAvailableProviders().map((p) => ({ id: p.id, name: p.name, icon: p.icon }));
+      return json(res, providers);
     }
 
     if (req.method !== "GET") {
@@ -456,6 +463,20 @@ export function startServer(config = getConfig()) {
 
   try {
     getDb();
+
+    // Index all providers
+    const providers = getAvailableProviders();
+    getIndexDb();
+    for (const provider of providers) {
+      const startTime = Date.now();
+      const sessions = [];
+      for await (const session of provider.scan()) {
+        sessions.push(session);
+      }
+      upsertIndex(provider.id, sessions);
+      console.log(`Indexed ${sessions.length} sessions for ${provider.id} in ${Date.now() - startTime}ms`);
+    }
+
     const stats = getStats();
     const server = createServer(requestHandler);
     server.listen(PORT, () => {
