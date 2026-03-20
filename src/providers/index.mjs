@@ -2,6 +2,7 @@
 import opencode from "./opencode/adapter.mjs";
 import claudeCode from "./claude-code/adapter.mjs";
 import codex from "./codex/adapter.mjs";
+import gemini from "./gemini/adapter.mjs";
 
 /** @type {import('./interface.mjs').ProviderAdapter[]} */
 const ALL_PROVIDERS = [];
@@ -43,3 +44,4 @@ export function getAllProviders() {
 registerProvider(opencode);
 registerProvider(claudeCode);
 registerProvider(codex);
+registerProvider(gemini);
