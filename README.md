@@ -77,19 +77,35 @@
 
 ---
 
-## 🚀 三秒启动
+## 🚀 快速开始
+
+### 方式一：从源码运行（推荐）
 
 ```bash
-npx oh-my-opensession
+git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
+cd oh-my-opensession
+npm start
 ```
 
 > 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
 
-想常驻？
+想自动弹浏览器？
 
 ```bash
+npm run dev  # 等于 npm start + --open
+```
+
+### 方式二：npx / 全局安装（npm 发布后可用）
+
+> ⚠️ **注意**：npm 包尚未发布，以下命令暂时无法使用。发布后即可一键启动：
+
+```bash
+# 临时运行（发布后可用）
+npx oh-my-opensession
+
+# 全局安装（发布后可用）
 npm install -g oh-my-opensession
-oh-my-opensession --open  # 自动弹浏览器，懒人福音
+oh-my-opensession --open
 ```
 
 ---
@@ -178,6 +194,155 @@ oh-my-opensession --open  # 自动弹浏览器，懒人福音
 macOS:   ~/.config/oh-my-opensession/meta.db
 Windows: %APPDATA%\oh-my-opensession\meta.db
 ```
+
+---
+
+## 📖 给人类的安装教程
+
+> 一步步来，不急。五分钟搞定。
+
+### Step 1: 检查 Node.js 版本
+
+```bash
+node --version
+# 需要 v22.5.0 或更高版本
+```
+
+**版本不够？** 推荐用 [nvm](https://github.com/nvm-sh/nvm) 升级：
+
+```bash
+# 安装 nvm（如果还没装）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc  # 或 source ~/.zshrc
+
+# 安装并使用 Node.js 22
+nvm install 22
+nvm use 22
+node --version  # 确认 >= 22.5.0
+```
+
+> Windows 用户可以用 [nvm-windows](https://github.com/coreybutler/nvm-windows) 或直接从 [Node.js 官网](https://nodejs.org/) 下载 v22+。
+
+### Step 2: 确认你有 OpenCode 会话数据
+
+```bash
+# macOS / Linux
+ls ~/.local/share/opencode/opencode.db
+
+# Windows (PowerShell)
+dir "$env:LOCALAPPDATA\opencode\opencode.db"
+```
+
+如果文件不存在也没关系——程序能跑，只是看不到数据。装了 [OpenCode](https://opencode.ai) 并用过之后就会自动生成。
+
+### Step 3: 克隆并运行
+
+```bash
+git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
+cd oh-my-opensession
+npm start
+```
+
+看到类似这样的输出就是成功了：
+
+```
+oh-my-opensession running at http://localhost:3456
+Language: en
+DB: /Users/xxx/.local/share/opencode/opencode.db
+42 sessions, 1337 messages.
+```
+
+打开浏览器访问 `http://localhost:3456` 即可。
+
+### Step 4: 可选 - 自动打开浏览器
+
+```bash
+npm run dev
+```
+
+### 常见问题
+
+| 问题 | 解决方法 |
+|:---|:---|
+| `Error: Cannot find module 'node:sqlite'` | Node.js 版本低于 22.5.0，请升级 |
+| `Error: listen EADDRINUSE :::3456` | 端口被占用，用 `node bin/cli.mjs --port 3457` 换个端口 |
+| 启动后显示 `0 sessions` | OpenCode 没有会话数据，或数据库路径不对。用 `--db /path/to/opencode.db` 指定路径 |
+| `SQLITE_CANTOPEN` | 数据库文件不存在或无读取权限，检查路径和文件权限 |
+
+---
+
+## 🤖 给 AI 的安装教程
+
+> 以下内容为结构化指令，供 AI 编程助手（Claude, ChatGPT, Cursor, Copilot 等）在帮助用户安装时参考。
+
+<details>
+<summary><strong>展开 AI 安装指令</strong></summary>
+
+### CONTEXT
+
+- **Project**: oh-my-opensession — 本地 Web 应用，浏览和管理 OpenCode 会话
+- **Runtime**: Node.js >= 22.5.0（依赖内置 `node:sqlite` 模块）
+- **Dependencies**: 零，无需 `npm install`
+- **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
+- **npm status**: 尚未发布到 npm，`npx oh-my-opensession` 暂不可用
+- **Default port**: 3456
+- **OpenCode DB location**:
+  - macOS / Linux: `~/.local/share/opencode/opencode.db`（遵循 XDG，受 `$XDG_DATA_HOME` 影响）
+  - Windows: `%LOCALAPPDATA%\opencode\opencode.db`
+
+### INSTALLATION STEPS
+
+```
+STEP 1: Verify Node.js version
+  RUN: node --version
+  EXPECT: v22.5.0 or higher
+  ON FAILURE: Guide user to install Node.js 22+ via nvm, fnm, or nodejs.org
+  ERROR PATTERN: "Cannot find module 'node:sqlite'" → Node.js version too old
+
+STEP 2: Clone repository
+  RUN: git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
+  RUN: cd oh-my-opensession
+
+STEP 3: Start server
+  RUN: npm start
+  OR:  node bin/cli.mjs [options]
+  EXPECT OUTPUT: "oh-my-opensession running at http://localhost:3456"
+  ON SUCCESS: Open http://localhost:3456 in browser
+
+STEP 4 (optional): Custom options
+  RUN: node bin/cli.mjs --port <PORT> --db <PATH> --lang <en|zh> --open
+```
+
+### ERROR HANDLING
+
+```
+ERROR: "listen EADDRINUSE :::3456"
+  CAUSE: Port 3456 already in use
+  FIX: node bin/cli.mjs --port 3457
+
+ERROR: "Cannot find module 'node:sqlite'"
+  CAUSE: Node.js < 22.5.0
+  FIX: Upgrade Node.js to 22.5.0+
+
+ERROR: "SQLITE_CANTOPEN"
+  CAUSE: opencode.db not found at default path
+  FIX: node bin/cli.mjs --db /actual/path/to/opencode.db
+  FIND DB: find ~ -name "opencode.db" -type f 2>/dev/null
+
+ERROR: "0 sessions, 0 messages"
+  CAUSE: OpenCode not yet used, or wrong DB path
+  FIX: Use OpenCode first, or specify correct --db path
+```
+
+### KEY FACTS FOR AI AGENTS
+
+- **Read-only**: 绝不修改 OpenCode 数据库，只做 SELECT 查询
+- **Meta storage**: 收藏/重命名/删除等操作存储在独立的 `meta.db`（macOS: `~/.config/oh-my-opensession/meta.db`）
+- **Zero install**: 克隆即跑，不需要 `npm install`（零依赖项目）
+- **ESM only**: 项目使用 ES Modules（`"type": "module"`），入口是 `bin/cli.mjs`
+- **No build step**: 无编译、无打包，纯原生 JavaScript
+
+</details>
 
 ---
 
