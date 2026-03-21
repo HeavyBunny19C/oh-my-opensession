@@ -243,21 +243,6 @@ KEY FACTS:
 
 ---
 
-## 💖 Donate
-
-If this project made you smile, consider buying me a Mixue ice cream 🍦
-
-<p align="center">
-  <img src="./docs/wechat-pay.jpeg" alt="WeChat Pay" width="250" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./docs/alipay.jpeg" alt="Alipay" width="250" />
-</p>
-<p align="center">
-  <sub>WeChat Pay &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Alipay</sub>
-</p>
-
----
-
 ## 📄 License
 
 MIT — use it, have fun 🎉
