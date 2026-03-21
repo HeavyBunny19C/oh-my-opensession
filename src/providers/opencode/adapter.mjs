@@ -132,6 +132,159 @@ const opencode = {
     }));
   },
 
+  getTrace(sessionId) {
+    const messages = dbGetMessages(sessionId);
+    const steps = [];
+
+    const knownBuiltins = new Set([
+      "ast_grep_search",
+      "ast_grep_replace",
+      "web_search"
+    ]);
+
+    const truncate = (value) => {
+      if (value == null) return null;
+      const text = typeof value === "string" ? value : JSON.stringify(value);
+      return text.length > 500 ? `${text.slice(0, 500)}…` : text;
+    };
+
+    const toNumber = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const classifyTool = (tool) => {
+      if (tool === "skill") return { category: "skill", mcpServer: null };
+      if (tool === "task") return { category: "agent", mcpServer: null };
+      if (tool === "invalid") return { category: "invalid", mcpServer: null };
+      if (tool.startsWith("lsp_")) return { category: "lsp", mcpServer: null };
+      if (tool.includes("_") && !knownBuiltins.has(tool)) {
+        return { category: "mcp", mcpServer: tool.split("_", 1)[0] || null };
+      }
+      if (["read", "write", "edit", "bash", "glob", "grep", "ast_grep_search", "ast_grep_replace"].includes(tool)) {
+        return { category: "tool", mcpServer: null };
+      }
+      return { category: "tool", mcpServer: null };
+    };
+
+    const startStep = (msg, msgData, startPartData, startPart) => ({
+      messageId: msg.id,
+      agent: msgData?.agent || null,
+      model: msgData?.modelID || null,
+      cost: 0,
+      tokens: 0,
+      reason: null,
+      timeStart: toNumber(startPartData?.time?.start) || toNumber(startPart?.time?.start),
+      timeEnd: 0,
+      duration: 0,
+      spans: []
+    });
+
+    let currentStep = null;
+
+    for (const msg of messages) {
+      const msgData = typeof msg.data === "string" ? parseJson(msg.data) : msg.data;
+      const parts = getParts(msg.id).map((p) => ({
+        ...p,
+        data: typeof p.data === "string" ? parseJson(p.data) : p.data
+      }));
+
+      for (const part of parts) {
+        const pd = part.data || {};
+        const partType = pd.type || "unknown";
+
+        if (partType === "step-start") {
+          if (currentStep) {
+            currentStep.duration = Math.max(0, toNumber(currentStep.timeEnd) - toNumber(currentStep.timeStart));
+            steps.push(currentStep);
+          }
+          currentStep = startStep(msg, msgData, pd, part);
+          continue;
+        }
+
+        if (partType === "step-finish") {
+          if (!currentStep) {
+            currentStep = startStep(msg, msgData, {}, {});
+          }
+          currentStep.cost = toNumber(pd.cost);
+          currentStep.tokens = toNumber(pd.tokens);
+          currentStep.reason = pd.reason || null;
+          currentStep.timeEnd = toNumber(pd.time?.end) || toNumber(part.time?.end) || currentStep.timeEnd;
+          currentStep.duration = Math.max(0, toNumber(currentStep.timeEnd) - toNumber(currentStep.timeStart));
+          if (!currentStep.duration) {
+            currentStep.duration = currentStep.spans.reduce((sum, span) => sum + toNumber(span.duration), 0);
+          }
+          steps.push(currentStep);
+          currentStep = null;
+          continue;
+        }
+
+        if (!currentStep) {
+          currentStep = startStep(msg, msgData, {}, {});
+        }
+
+        let name = partType;
+        let category = "tool";
+        let mcpServer = null;
+
+        if (partType === "reasoning") {
+          name = "reasoning";
+          category = "reasoning";
+        } else if (partType === "text") {
+          name = "text";
+          category = "text";
+        } else {
+          const toolName = typeof pd.tool === "string" ? pd.tool : "";
+          if (toolName) {
+            name = toolName;
+            const classification = classifyTool(toolName);
+            category = classification.category;
+            mcpServer = classification.mcpServer;
+          }
+        }
+
+        const stateTime = pd.state?.time || {};
+        const partTime = pd.time || {};
+        const timeStart = toNumber(stateTime.start) || toNumber(partTime.start);
+        const timeEnd = toNumber(stateTime.end) || toNumber(partTime.end);
+        const duration = Math.max(0, timeEnd - timeStart);
+
+        currentStep.spans.push({
+          id: part.id,
+          name,
+          category,
+          ...(mcpServer ? { mcpServer } : {}),
+          timeStart,
+          timeEnd,
+          duration,
+          status: pd.state?.status || null,
+          input: truncate(pd.state?.input),
+          output: truncate(pd.state?.output),
+          title: pd.state?.title || null
+        });
+      }
+    }
+
+    if (currentStep) {
+      currentStep.duration = currentStep.spans.reduce((sum, span) => sum + toNumber(span.duration), 0);
+      steps.push(currentStep);
+    }
+
+    const summary = steps.reduce(
+      (acc, step) => {
+        acc.totalSteps += 1;
+        acc.totalSpans += step.spans.length;
+        acc.totalDuration += toNumber(step.duration);
+        acc.totalCost += toNumber(step.cost);
+        acc.totalTokens += toNumber(step.tokens);
+        return acc;
+      },
+      { totalSteps: 0, totalSpans: 0, totalDuration: 0, totalCost: 0, totalTokens: 0 }
+    );
+
+    return { sessionId, steps, summary };
+  },
+
   exportSession(_sessionId) {
     return null;
   }
