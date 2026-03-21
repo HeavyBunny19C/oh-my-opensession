@@ -1,6 +1,6 @@
 {
   "name": "@heavybunny19c_lee/opensession",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The developer's AI chronicle — your conversations with AI are scattered across four tools; OpenSession binds them into one searchable volume.",
   "type": "module",
   "bin": {
