@@ -115,7 +115,7 @@
 ### 方式一：npx 一键运行（推荐）
 
 ```bash
-npx opensession
+npx @heavybunny19c_lee/opensession
 ```
 
 > 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
@@ -123,7 +123,7 @@ npx opensession
 ### 方式二：全局安装
 
 ```bash
-npm install -g opensession
+npm install -g @heavybunny19c_lee/opensession
 opensession --open  # 自动弹浏览器
 ```
 
@@ -131,7 +131,7 @@ opensession --open  # 自动弹浏览器
 
 ```bash
 git clone https://github.com/HeavyBunny19C/OpenSession.git
-cd oh-my-opensession
+cd OpenSession
 npm start
 ```
 
@@ -143,7 +143,7 @@ npm start
 # npx 用户：自动使用最新版，无需操作
 
 # 全局安装用户：
-npm update -g opensession
+npm update -g @heavybunny19c_lee/opensession
 
 # 源码用户：
 git pull origin main
@@ -153,7 +153,7 @@ git pull origin main
 
 ```bash
 # 全局安装用户：
-npm uninstall -g opensession
+npm uninstall -g @heavybunny19c_lee/opensession
 
 # 清理元数据（可选，收藏/重命名等数据）：
 # macOS/Linux:

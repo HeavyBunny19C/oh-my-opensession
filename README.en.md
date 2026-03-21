@@ -58,7 +58,7 @@ Search, browse, star, export, stats — dark mode, terminal aesthetic, zero depe
 ## 🚀 Quick Start
 
 ```bash
-npx opensession
+npx @heavybunny19c_lee/opensession
 ```
 
 > 💡 Open `http://localhost:3456` and start exploring your AI coding sessions!
@@ -66,7 +66,7 @@ npx opensession
 ### Global Install
 
 ```bash
-npm install -g opensession
+npm install -g @heavybunny19c_lee/opensession
 opensession --open  # auto-opens browser
 ```
 
@@ -74,7 +74,7 @@ opensession --open  # auto-opens browser
 
 ```bash
 git clone https://github.com/HeavyBunny19C/OpenSession.git
-cd oh-my-opensession
+cd OpenSession
 npm start
 ```
 
@@ -84,13 +84,13 @@ npm start
 
 ```bash
 # Install
-npm install -g opensession
+npm install -g @heavybunny19c_lee/opensession
 
 # Upgrade to latest
-npm update -g opensession
+npm update -g @heavybunny19c_lee/opensession
 
 # Uninstall
-npm uninstall -g opensession
+npm uninstall -g @heavybunny19c_lee/opensession
 ```
 
 > Backward compatible: the `oh-my-opensession` command still works after upgrade.
