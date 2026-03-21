@@ -2,10 +2,10 @@
   <img src="./docs/preview-dashboard.png" alt="oh-my-opensession" width="720" />
 </p>
 
-<h1 align="center">✨ OpenSession ✨</h1>
+<h1 align="center">OpenSession</h1>
 
 <p align="center">
-  <strong>🖥️ Your AI pair-programming "memoir" — a unified session browser for multiple AI coding tools</strong>
+  <strong>The Developer's AI Chronicle — binding your scattered conversation diaries into one volume</strong>
 </p>
 
 <p align="center">
@@ -18,6 +18,27 @@
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
   <img src="https://img.shields.io/badge/v1.0.0-orange?style=flat-square" alt="Version" />
 </p>
+
+<p align="center">
+  <em>Developers keep journals too — ours just happen to be AI conversations.</em><br/>
+  <em>The problem? Your journal is scattered across four different drawers.</em>
+</p>
+
+---
+
+## 🤔 What Is This?
+
+We might be the first generation of programmers who **talk to AI more than to our coworkers**.
+
+Think about it — every day you pour your most complex architecture decisions, your trickiest debugging logic, your most inspired design instincts into conversations with AI. These conversations are more honest than any code comment you've ever written (let's be real, you'd never put "I can't understand my own code from three days ago" in a comment), more informative than any standup, and closer to your actual work than any weekly report.
+
+**Your AI conversation history is the most authentic developer journal of this era.**
+
+Except this journal is scattered across four different notebooks — OpenCode's SQLite database, Claude Code's JSONL files, Codex's JSON, Gemini's temp directory. Four formats, four corners, much like that "read later" bookmark folder you'll never actually organize.
+
+**OpenSession does one simple thing: gathers those four scattered diaries and binds them into one volume.**
+
+Search, browse, star, export, stats — dark mode, terminal aesthetic, zero dependencies. It'll even tell you exactly how many tokens you've burned (you might want to sit down before looking at that number 💸).
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "@heavybunny19c_lee/opensession",
   "version": "1.0.0",
-  "description": "A web-based session viewer for AI coding tools — browse, search, and manage sessions from OpenCode, Claude Code, Codex CLI, and Gemini CLI.",
+  "description": "The developer's AI chronicle — your conversations with AI are scattered across four tools; OpenSession binds them into one searchable volume.",
   "type": "module",
   "bin": {
     "opensession": "bin/cli.mjs",
