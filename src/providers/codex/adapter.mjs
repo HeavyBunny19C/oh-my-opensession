@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, lstatSync } from "node:fs";
 import path from "node:path";
 import { getConfig } from "../../config.mjs";
 import { parseSession, extractMeta, recordsToMessages } from "./parser.mjs";
@@ -12,13 +12,21 @@ function discoverSessionFiles() {
   const sessionsDir = path.join(getCodexDir(), "sessions");
   if (!existsSync(sessionsDir)) return [];
   const files = [];
+  const visited = new Set();
 
   function walk(dir) {
     try {
+      const dirStat = lstatSync(dir);
+      if (dirStat.isSymbolicLink()) return;
+      const key = `${dirStat.dev}:${dirStat.ino}`;
+      if (visited.has(key)) return;
+      visited.add(key);
+      
       for (const entry of readdirSync(dir)) {
         const full = path.join(dir, entry);
         try {
-          const stat = statSync(full);
+          const stat = lstatSync(full);
+          if (stat.isSymbolicLink()) continue;
           if (stat.isDirectory()) walk(full);
           else if (entry.endsWith(".jsonl")) {
             const sessionId = entry.replace(/\.jsonl$/, "").replace(/^rollout-/, "");

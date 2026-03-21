@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, lstatSync } from "node:fs";
 import path from "node:path";
 import { getConfig } from "../../config.mjs";
 import { parseTranscript, extractSessionMeta, recordsToMessages } from "./parser.mjs";
@@ -33,9 +33,11 @@ function discoverSessionFiles() {
   const projectsDir = path.join(claudeDir, "projects");
   if (existsSync(projectsDir)) {
     try {
-      for (const projectDir of readdirSync(projectsDir)) {
-        const projectPath = path.join(projectsDir, projectDir);
-        if (!statSync(projectPath).isDirectory()) continue;
+       for (const projectDir of readdirSync(projectsDir)) {
+         const projectPath = path.join(projectsDir, projectDir);
+         const stat = lstatSync(projectPath);
+         if (stat.isSymbolicLink()) continue;
+         if (!stat.isDirectory()) continue;
         for (const entry of readdirSync(projectPath)) {
           if (entry.endsWith(".jsonl")) {
             const sessionId = entry.replace(".jsonl", "");
