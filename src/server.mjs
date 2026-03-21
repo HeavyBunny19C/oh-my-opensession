@@ -18,6 +18,7 @@ import {
   getDailySessionCounts,
   getSessionsByIds
 } from "./db.mjs";
+import opencodeAdapter from "./providers/opencode/adapter.mjs";
 import { getAvailableProviders, getAllProviders, getProvider } from "./providers/index.mjs";
 import { getIndexDb, upsertIndex, getIndexedSessions } from "./index-db.mjs";
 import { setLocale, getLocale } from "./i18n.mjs";
@@ -611,6 +612,30 @@ export async function startServer(config = getConfig()) {
         return json(res, {
           session: normalizeSessionRecord(session),
           messages: adapter.getMessages(sessionId)
+        });
+      } catch (err) {
+        console.error(`Route error: ${err.message}`);
+        return json(res, { error: "Internal server error" }, 500);
+      }
+    }
+
+    const apiSessionTraceMatch = pathname.match(/^\/api\/([a-z][a-z0-9-]*)\/session\/([^/]+)\/trace$/);
+    if (apiSessionTraceMatch) {
+      const providerId = apiSessionTraceMatch[1];
+      const sessionId = decodeURIComponent(apiSessionTraceMatch[2]);
+      const adapter = providerMap.get(providerId);
+      if (!adapter) {
+        return json(res, { ok: false, error: "Provider not found" }, 404);
+      }
+
+      try {
+        if (providerId === "opencode") {
+          return json(res, opencodeAdapter.getTrace(sessionId));
+        }
+
+        return json(res, {
+          steps: [],
+          summary: { totalSteps: 0, totalSpans: 0, totalDuration: 0, totalCost: 0, totalTokens: 0 }
         });
       } catch (err) {
         console.error(`Route error: ${err.message}`);
