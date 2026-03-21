@@ -506,6 +506,8 @@ async function openTracePanel(partId) {
   if (provider !== "opencode") return;
   if (!sessionId) return;
 
+  panelEl.querySelector('#trace-timeline').innerHTML = '<div class="trace-loading">Loading trace</div>';
+
   try {
     const res = await fetch(`/api/${encodeURIComponent(provider)}/session/${encodeURIComponent(sessionId)}/trace`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
