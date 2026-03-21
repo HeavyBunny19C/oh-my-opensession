@@ -299,24 +299,41 @@ KEY FACTS:
 
 > v1.0 已完成多 Provider 架构，以下是已规划但尚未实现的特性。欢迎 PR 和 Issue！
 
-**跨 Provider 能力增强**
+**🔀 跨平台会话迁移 & 上下文注入**
+- [ ] 跨 Provider 会话导出 / 导入（OpenCode ↔ Claude Code ↔ Codex ↔ Gemini）
+- [ ] 打开会话时自动注入上下文到目标工具（一键在另一个 AI 工具中继续对话）
+- [ ] `adapter.exportSession()` 已预埋接口，返回标准化消息 + 原始数据双格式
+
+**🧠 会话知识图谱**
+- [ ] 基于 `parentId` 的父子会话层级关系可视化（主任务 → 子任务 → 孙任务）
+- [ ] 会话关联图：展示 session 之间的派生关系、分支、合并
+- [ ] 项目维度聚合：按工作目录自动归组关联会话
+- [ ] `RawSession.parentId` 已预埋，OpenCode 的 `parent_id` 和 Claude Code 的 `parentSessionId` 在 v1 已采集
+
+**🔮 Agent / Skill / MCP / Tool / LSP 可视化**
+- [ ] 会话内节点图：展示 Agent 调用链、Skill 触发、MCP Server 交互、Tool 执行、LSP 操作的完整思考链路
+- [ ] 节点级耗时分析：每个 tool call / agent delegation 的执行时间和 token 消耗
+- [ ] 思考链路回放：按时间线还原 AI 的决策过程（thinking → tool → result → next step）
+- [ ] `Message.metadata` 已预埋，各 Provider 的 agent name / skill name / MCP server / delegation chain 在 v1 已保留原始数据
+
+**🔌 跨 Provider 能力增强**
 - [ ] 跨 Provider 统一搜索（当前各 tab 独立搜索）
 - [ ] 跨 Provider 聚合统计面板
-- [ ] 非 OpenCode Provider 的收藏 / 重命名 / 删除 / 导出（当前仅 OpenCode 支持）
+- [ ] 非 OpenCode Provider 的收藏 / 重命名 / 删除（当前仅 OpenCode 支持写操作）
 
-**数据 & 实时性**
+**⚡ 数据 & 实时性**
 - [ ] 实时文件监听（当前仅启动时索引 + 手动刷新）
-- [ ] 会话知识图谱（基于 parentId 的父子任务关联，架构已预埋）
-- [ ] 会话导出 / 跨平台迁移（adapter.exportSession() 接口已定义）
+- [ ] 增量索引（仅扫描新增/变更的会话文件）
 
-**插件 & 扩展**
+**🧩 插件 & 扩展**
 - [ ] 运行时动态 Provider 插件加载（当前为编译时注册）
 - [ ] UI 内 Provider 设置面板（当前仅 CLI 参数 / 环境变量配置）
 - [ ] 更多 Provider：Cursor / Windsurf / Aider
 
 **架构预埋（已在 v1.0 中完成）**
-- ✅ `RawSession.parentId` — 会话知识图谱字段
-- ✅ `adapter.exportSession()` — 导出接口存根
+- ✅ `RawSession.parentId` — 知识图谱父子关联字段
+- ✅ `Message.metadata` — Agent/Skill/MCP/Tool/LSP 原始数据保留
+- ✅ `adapter.exportSession()` — 跨平台迁移导出接口存根
 - ✅ `session_index` 复合主键 `(provider, session_id)` — 跨 Provider 数据隔离
 
 ---

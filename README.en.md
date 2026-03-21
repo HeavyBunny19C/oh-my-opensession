@@ -181,24 +181,41 @@ KEY FACTS:
 
 > v1.0 ships with multi-provider architecture. Below are planned but not yet implemented features. PRs and Issues welcome!
 
-**Cross-Provider Enhancements**
+**🔀 Cross-Platform Session Migration & Context Injection**
+- [ ] Cross-provider session export / import (OpenCode ↔ Claude Code ↔ Codex ↔ Gemini)
+- [ ] Auto-inject context into target tool when opening a session (one-click to continue a conversation in another AI tool)
+- [ ] `adapter.exportSession()` interface pre-seeded — returns normalized messages + raw data in dual format
+
+**🧠 Session Knowledge Graph**
+- [ ] Parent-child session hierarchy visualization (main task → subtask → sub-subtask)
+- [ ] Session relation graph: derivation, branching, merging between sessions
+- [ ] Project-level aggregation: auto-group related sessions by working directory
+- [ ] `RawSession.parentId` pre-seeded — OpenCode's `parent_id` and Claude Code's `parentSessionId` already collected in v1
+
+**🔮 Agent / Skill / MCP / Tool / LSP Visualization**
+- [ ] In-session node graph: full thinking chain of Agent calls, Skill triggers, MCP Server interactions, Tool executions, LSP operations
+- [ ] Per-node timing analysis: execution time and token cost for each tool call / agent delegation
+- [ ] Thinking chain replay: reconstruct AI decision process on a timeline (thinking → tool → result → next step)
+- [ ] `Message.metadata` pre-seeded — agent name / skill name / MCP server / delegation chain raw data preserved per provider in v1
+
+**🔌 Cross-Provider Enhancements**
 - [ ] Unified search across all providers (currently per-tab only)
 - [ ] Aggregated stats dashboard across providers
-- [ ] Star / rename / delete / export for non-OpenCode providers (currently OpenCode only)
+- [ ] Star / rename / delete for non-OpenCode providers (currently OpenCode only for write ops)
 
-**Data & Real-time**
+**⚡ Data & Real-time**
 - [ ] Real-time file watching (currently reindex on launch + manual refresh)
-- [ ] Session knowledge graph (parent-child task linking via parentId, architecture pre-seeded)
-- [ ] Session export / cross-platform migration (adapter.exportSession() interface defined)
+- [ ] Incremental indexing (scan only new/changed session files)
 
-**Plugins & Extensibility**
+**🧩 Plugins & Extensibility**
 - [ ] Runtime dynamic provider plugin loading (currently compile-time registered)
 - [ ] In-UI provider settings panel (currently CLI flags / env vars only)
 - [ ] More providers: Cursor / Windsurf / Aider
 
 **Architecture Pre-seeded in v1.0**
-- ✅ `RawSession.parentId` — knowledge graph field
-- ✅ `adapter.exportSession()` — export interface stub
+- ✅ `RawSession.parentId` — knowledge graph parent-child linking field
+- ✅ `Message.metadata` — Agent/Skill/MCP/Tool/LSP raw data preserved
+- ✅ `adapter.exportSession()` — cross-platform migration export interface stub
 - ✅ `session_index` composite PK `(provider, session_id)` — cross-provider data isolation
 
 ---
