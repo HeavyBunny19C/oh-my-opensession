@@ -92,6 +92,34 @@
   background-color: var(--bg-tertiary);
 }
 
+.provider-tab:focus-visible,
+.nav-link:focus-visible,
+.theme-toggle:focus-visible,
+.btn:focus-visible,
+.action-btn:focus-visible,
+.range-btn:focus-visible,
+.star-btn:focus-visible,
+.card-menu-trigger:focus-visible,
+.tool-call summary:focus-visible,
+.trace-panel-close:focus-visible,
+.chain-node:focus-visible,
+.chain-step-header:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.provider-tab:active,
+.nav-link:active,
+.btn:active,
+.action-btn:active,
+.range-btn:active {
+  transform: scale(0.97);
+}
+
+.btn, .action-btn, .range-btn, .provider-tab, .nav-link, .star-btn, .card-menu-trigger, .theme-toggle {
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, color 0.15s;
+}
+
 /* Layout */
 * {
   box-sizing: border-box;
