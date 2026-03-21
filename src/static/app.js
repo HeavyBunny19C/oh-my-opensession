@@ -699,14 +699,3 @@ document.addEventListener("click", (e) => {
   if (!closeBtn) return;
   closeTracePanel();
 });
-
-// Trace auto-open disabled (security fix: trace API returns potentially 1000+ steps)
-// User must explicitly click a tool call to open trace panel
-// (function autoOpenTrace() {
-//   const layoutEl = document.querySelector(".two-column[data-session-id][data-provider]");
-//   if (!layoutEl) return;
-//   const provider = layoutEl.dataset.provider || "";
-//   const sessionId = layoutEl.dataset.sessionId || "";
-//   if (provider !== "opencode" || !sessionId) return;
-//   openTracePanel(null);
-// })();
