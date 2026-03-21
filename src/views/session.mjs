@@ -27,7 +27,7 @@ function modelLabel(model) {
   return model.modelID || model.providerID || "";
 }
 
-function renderPart(messageData, partData) {
+function renderPart(messageData, partData, partId) {
   if (!partData || typeof partData !== "object") {
     return "";
   }
@@ -52,7 +52,8 @@ function renderPart(messageData, partData) {
       state.input,
       state.output,
       state.status,
-      formatDuration(timing.start, timing.end)
+      formatDuration(timing.start, timing.end),
+      partId
     );
   }
 
@@ -95,14 +96,14 @@ ${actions}
   const messageMarkup = messages.map((message) => {
     const messageData = safeParse(message.data);
     const parts = partsByMessage.get(message.id) || [];
-    const renderedParts = parts.map((part) => renderPart(messageData, safeParse(part.data))).filter(Boolean).join("\n");
+    const renderedParts = parts.map((part) => renderPart(messageData, safeParse(part.data), part.id)).filter(Boolean).join("\n");
     return renderedParts ? `<article class="message-group">${renderedParts}</article>` : "";
   }).filter(Boolean).join("\n");
 
   const sidebarCards = (recentSessions || []).map(s => sessionCard(s, s.id === session.id, { provider })).join("\n");
 
   const body = `
-<div class="two-column">
+<div class="two-column" data-session-id="${escapeHtml(session.id)}" data-provider="${escapeHtml(provider)}">
   <aside class="sidebar">
     <div class="sidebar-header">
       <h3>${t("detail.sidebar_title")}</h3>
@@ -118,6 +119,19 @@ ${actions}
       ${messageMarkup || `<p class="empty-state">${t("detail.no_messages")}</p>`}
     </section>
   </div>
+  <aside id="trace-panel" class="trace-panel">
+    <div class="trace-panel-header">
+      <h3 id="trace-title">Trace</h3>
+      <button type="button" class="trace-panel-close">&times;</button>
+    </div>
+    <div class="trace-panel-tabs">
+      <button type="button" class="trace-tab active" data-tab="timeline">⏱ Timeline</button>
+      <button type="button" class="trace-tab" data-tab="graph">🔮 Graph</button>
+    </div>
+    <div id="trace-timeline" class="trace-tab-content active"></div>
+    <div id="trace-graph" class="trace-tab-content"></div>
+    <div id="trace-node-detail" class="trace-node-detail"></div>
+  </aside>
 </div>
   `;
 

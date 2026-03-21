@@ -144,14 +144,14 @@ export function messageBubble(role, content, meta = {}) {
   </section>`;
 }
 
-export function toolCallBlock(tool, input, output, status, duration) {
+export function toolCallBlock(tool, input, output, status, duration, partId) {
   const inputText = truncate(input);
   const outputText = truncate(output);
   const safeStatus = escapeHtml(status || "unknown");
   const safeDuration = duration ? `<span class="tool-duration">${escapeHtml(duration)}</span>` : "";
   const summary = escapeHtml(toolDescription(tool || "tool", input));
 
-  return `<details class="tool-call tool-status-${safeStatus}">
+  return `<details class="tool-call tool-status-${safeStatus}" ${partId ? `data-part-id="${escapeHtml(partId)}"` : ""}>
     <summary>
       <span class="tool-name">${summary}</span>
       <span class="tool-status">${safeStatus}</span>
