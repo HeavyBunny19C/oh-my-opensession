@@ -5,7 +5,7 @@
 <h1 align="center">✨ OpenSession ✨</h1>
 
 <p align="center">
-  <strong>🖥️ 你和 AI 结对编程的「回忆录」—— 终端风格的 <a href="https://opencode.ai">OpenCode</a> 会话浏览器</strong>
+  <strong>🖥️ 你和 AI 结对编程的「回忆录」—— 多工具统一会话浏览器</strong>
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.5.0-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
   <img src="https://img.shields.io/badge/dependencies-0-blue?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/version-0.2.0-orange?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.0.0-orange?style=flat-square" alt="Version" />
 </p>
 
 <p align="center">
@@ -30,11 +30,24 @@
 
 你有没有想过——
 
-> 「上周那个 bug 我是怎么让 Claude 帮我修的来着？」
+> 「上周那个 bug 我是怎么让 AI 帮我修的来着？」
 > 「上个月写的那个正则表达式，AI 给的方案贼优雅，在哪呢？」
 > 「我到底烧了多少 token？💸」
 
-**oh-my-opensession** 就是来解决这些问题的。它是一个本地 Web 应用，帮你浏览、搜索、管理所有 OpenCode 会话——带暗色模式、终端美学、还有一点点极客浪漫 🌙
+**OpenSession** 就是来解决这些问题的。它是一个本地 Web 应用，帮你浏览、搜索、管理来自多个 AI 编程工具的会话——带暗色模式、终端美学、还有一点点极客浪漫 🌙
+
+---
+
+## 🔌 支持的 AI 编程工具
+
+| 工具 | 状态 | 会话来源 |
+|:---|:---:|:---|
+| [OpenCode](https://opencode.ai) | ✅ 完整支持 | `~/.local/share/opencode/opencode.db` |
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | ✅ 完整支持 | `~/.claude/projects/` |
+| [Codex CLI](https://github.com/openai/codex) | ✅ 完整支持 | `~/.codex/sessions/` |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | ✅ 完整支持 | `~/.gemini/tmp/` |
+
+> 自动检测已安装的工具，未安装的会在顶栏灰显。无需手动配置。
 
 ---
 
@@ -77,22 +90,24 @@
 
 ---
 
-## 🚀 三秒启动
+## 🚀 安装与启动
+
+### 方式一：npx 一键运行（推荐）
 
 ```bash
 npx opensession
 ```
 
-> 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
+> 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
 
-想常驻？
+### 方式二：全局安装
 
 ```bash
 npm install -g opensession
-opensession --open  # 自动弹浏览器，懒人福音
+opensession --open  # 自动弹浏览器
 ```
 
-也可以从源码运行：
+### 方式三：从源码运行
 
 ```bash
 git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
@@ -102,10 +117,38 @@ npm start
 
 ---
 
+## 🔄 升级
+
+```bash
+# npx 用户：自动使用最新版，无需操作
+
+# 全局安装用户：
+npm update -g opensession
+
+# 源码用户：
+git pull origin main
+```
+
+## 🗑️ 卸载
+
+```bash
+# 全局安装用户：
+npm uninstall -g opensession
+
+# 清理元数据（可选，收藏/重命名等数据）：
+# macOS/Linux:
+rm -rf ~/.config/oh-my-opensession
+# Windows:
+rd /s /q "%APPDATA%\oh-my-opensession"
+```
+
+---
+
 ## ✨ 能干啥？
 
 | | 功能 | 一句话说明 |
 |:---:|:---|:---|
+| 🔌 | **多工具支持** | OpenCode / Claude Code / Codex CLI / Gemini CLI 一站式管理 |
 | 🌙 | **暗色模式** | 自动跟随系统，深夜 coding 不刺眼 |
 | 🖥️ | **终端美学** | 代码块卡片 + 网格背景，看着就想写代码 |
 | 🔍 | **搜索 & 筛选** | 按关键词、时间范围快速定位，告别大海捞针 |
@@ -115,10 +158,9 @@ npm start
 | 🗑️ | **软删除** | 手滑删错？回收站救你 |
 | 📤 | **导出** | Markdown / JSON 一键导出，写博客素材有了 |
 | 📊 | **Token 统计** | 消耗趋势、模型分布，钱花哪了一目了然 |
-| 🔔 | **Toast 通知** | 操作有反馈，不再对着屏幕发呆 |
 | 🗂️ | **批量操作** | 多选收藏/删除，效率拉满 |
 | 🌐 | **中英双语** | `--lang zh` 切中文，`--lang en` 切英文 |
-| 🔒 | **只读安全** | 绝不碰你的 OpenCode 数据库，放心用 |
+| 🔒 | **只读安全** | 绝不碰你的原始数据，放心用 |
 | 📦 | **零依赖** | 只要 Node.js，没有 node_modules 黑洞 |
 
 ---
@@ -126,7 +168,7 @@ npm start
 ## 🛠️ 环境要求
 
 - **Node.js** >= 22.5.0（用了内置的 `node:sqlite`，所以版本要求高一丢丢）
-- 装了 [OpenCode](https://opencode.ai) 并且有会话数据（没数据也能跑，就是空空如也 😅）
+- 至少安装了以下任一 AI 编程工具：OpenCode、Claude Code、Codex CLI、Gemini CLI
 
 | 平台 | 架构 | 状态 |
 |:---|:---|:---:|
@@ -136,15 +178,21 @@ npm start
 
 > 纯 JS，零 native 依赖，有 Node.js 就能跑 🏃
 
+---
+
 ## ⚙️ 命令行选项
 
 ```
-选项                    说明                          默认值
---port <端口号>         服务端口                       3456
---db <路径>            opencode.db 路径               自动检测
---lang <en|zh>         界面语言                       自动检测
---open                 启动后自动弹浏览器              false
--h, --help             显示帮助                       —
+选项                        说明                                默认值
+--port <端口号>             服务端口                             3456
+--opencode-db <路径>        opencode.db 路径（别名: --db）        自动检测
+--claude-dir <路径>         Claude Code 数据目录                  ~/.claude
+--codex-dir <路径>          Codex CLI 会话目录                    ~/.codex/sessions
+--gemini-dir <路径>         Gemini CLI 数据目录                   ~/.gemini/tmp
+--reindex                   启动时强制重建所有索引                 false
+--lang <en|zh>              界面语言                              自动检测
+--open                      启动后自动弹浏览器                    false
+-h, --help                  显示帮助                              —
 ```
 
 ## 🔧 环境变量
@@ -153,186 +201,95 @@ npm start
 |:---|:---|
 | `PORT` | 服务端口（`--port` 优先） |
 | `SESSION_VIEWER_DB_PATH` | opencode.db 路径（`--db` 优先） |
-| `OPENSESSION_META_PATH` | 元数据库路径 |
+| `OH_MY_OPENSESSION_META_PATH` | 元数据库路径 |
 
 ---
 
-## 🧠 工作原理
+## 🏗️ 架构
 
 ```
-┌─────────────────────────────────────────┐
-│  OpenCode DB (只读)                      │
-│  └── session / message / part / todo    │
-└──────────────┬──────────────────────────┘
-               │ SELECT（绝不 INSERT/UPDATE）
-               ▼
-┌─────────────────────────────────────────┐
-│  OpenSession                            │
-│  ├── 服务端渲染 HTML                     │
-│  ├── 无限滚动 API                        │
-│  └── 管理操作 → meta.db (独立存储)        │
-└──────────────┬──────────────────────────┘
-               │ http://localhost:3456
-               ▼
-┌─────────────────────────────────────────┐
-│  🌙 你的浏览器                           │
-│  └── 暗色模式 / 终端美学 / Toast 通知     │
-└─────────────────────────────────────────┘
+src/
+├── providers/           # Provider 适配器（插件式架构）
+│   ├── interface.mjs    # 统一接口定义
+│   ├── opencode/        # OpenCode 适配器（SQLite）
+│   ├── claude-code/     # Claude Code 适配器（JSONL）
+│   ├── codex/           # Codex CLI 适配器（JSON）
+│   └── gemini/          # Gemini CLI 适配器（JSON）
+├── views/               # 服务端渲染模板
+├── static/              # 前端 CSS + JS
+├── index-db.mjs         # 跨 Provider 会话索引
+├── meta.mjs             # 元数据（收藏/重命名/删除）
+├── server.mjs           # HTTP 路由
+└── config.mjs           # 配置解析
 ```
 
-你的 OpenCode 数据 **绝对安全**——我们只看不摸。收藏、重命名、删除等操作存在独立的 `meta.db` 里：
+### 添加新 Provider
 
-```
-macOS:   ~/.config/opensession/meta.db
-Windows: %APPDATA%\opensession\meta.db
-```
+参考 `docs/CONTRIBUTING-PROVIDERS.md`，实现 `ProviderAdapter` 接口即可接入新工具。
 
 ---
 
-## 📖 给人类的安装教程
-
-> 一步步来，不急。五分钟搞定。
-
-### Step 1: 检查 Node.js 版本
-
-```bash
-node --version
-# 需要 v22.5.0 或更高版本
-```
-
-**版本不够？** 推荐用 [nvm](https://github.com/nvm-sh/nvm) 升级：
-
-```bash
-# 安装 nvm（如果还没装）
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-source ~/.bashrc  # 或 source ~/.zshrc
-
-# 安装并使用 Node.js 22
-nvm install 22
-nvm use 22
-node --version  # 确认 >= 22.5.0
-```
-
-> Windows 用户可以用 [nvm-windows](https://github.com/coreybutler/nvm-windows) 或直接从 [Node.js 官网](https://nodejs.org/) 下载 v22+。
-
-### Step 2: 确认你有 OpenCode 会话数据
-
-```bash
-# macOS / Linux
-ls ~/.local/share/opencode/opencode.db
-
-# Windows (PowerShell)
-dir "$env:LOCALAPPDATA\opencode\opencode.db"
-```
-
-如果文件不存在也没关系——程序能跑，只是看不到数据。装了 [OpenCode](https://opencode.ai) 并用过之后就会自动生成。
-
-### Step 3: 克隆并运行
-
-```bash
-git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
-cd oh-my-opensession
-npm start
-```
-
-看到类似这样的输出就是成功了：
-
-```
-OpenSession running at http://localhost:3456
-Language: en
-DB: /Users/xxx/.local/share/opencode/opencode.db
-42 sessions, 1337 messages.
-```
-
-打开浏览器访问 `http://localhost:3456` 即可。
-
-### Step 4: 可选 - 自动打开浏览器
-
-```bash
-npm run dev
-```
-
-### 常见问题
-
-| 问题 | 解决方法 |
-|:---|:---|
-| `Error: Cannot find module 'node:sqlite'` | Node.js 版本低于 22.5.0，请升级 |
-| `Error: listen EADDRINUSE :::3456` | 端口被占用，用 `node bin/cli.mjs --port 3457` 换个端口 |
-| 启动后显示 `0 sessions` | OpenCode 没有会话数据，或数据库路径不对。用 `--db /path/to/opencode.db` 指定路径 |
-| `SQLITE_CANTOPEN` | 数据库文件不存在或无读取权限，检查路径和文件权限 |
-
----
-
-## 🤖 给 AI 的安装教程
-
-> 以下内容为结构化指令，供 AI 编程助手（Claude, ChatGPT, Cursor, Copilot 等）在帮助用户安装时参考。
+## 🐛 常见问题
 
 <details>
-<summary><strong>展开 AI 安装指令</strong></summary>
+<summary><strong>Q: 启动后看不到某个工具的会话？</strong></summary>
 
-### CONTEXT
+确认该工具已安装且有会话数据。OpenSession 会自动检测以下路径：
+- OpenCode: `~/.local/share/opencode/opencode.db`
+- Claude Code: `~/.claude/projects/`
+- Codex CLI: `~/.codex/sessions/`
+- Gemini CLI: `~/.gemini/tmp/`
 
-- **Project**: oh-my-opensession — 本地 Web 应用，浏览和管理 OpenCode 会话
-- **Runtime**: Node.js >= 22.5.0（依赖内置 `node:sqlite` 模块）
-- **Dependencies**: 零，无需 `npm install`
-- **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
-- **npm**: 已发布，`npx oh-my-opensession` 可直接使用
-- **Default port**: 3456
-- **OpenCode DB location**:
-  - macOS / Linux: `~/.local/share/opencode/opencode.db`（遵循 XDG，受 `$XDG_DATA_HOME` 影响）
-  - Windows: `%LOCALAPPDATA%\opencode\opencode.db`
+如果路径不同，用对应的 `--xxx-dir` 参数指定。
+</details>
 
-### INSTALLATION STEPS
+<details>
+<summary><strong>Q: 端口被占用？</strong></summary>
+
+```bash
+opensession --port 8080
+```
+</details>
+
+<details>
+<summary><strong>Q: 数据安全吗？</strong></summary>
+
+完全安全。OpenSession 以只读方式访问 AI 工具的数据，收藏/重命名/删除等操作存储在独立的 `meta.db` 中（`~/.config/oh-my-opensession/meta.db`），绝不修改原始数据。
+</details>
+
+---
+
+## 🤖 AI Agent 速查
+
+<details>
+<summary>点击展开（给 AI 助手看的）</summary>
 
 ```
-STEP 1: Verify Node.js version
-  RUN: node --version
-  EXPECT: v22.5.0 or higher
-  ON FAILURE: Guide user to install Node.js 22+ via nvm, fnm, or nodejs.org
-  ERROR PATTERN: "Cannot find module 'node:sqlite'" → Node.js version too old
+PROJECT: oh-my-opensession (OpenSession)
+TYPE: Multi-provider AI session viewer & manager
+STACK: Node.js 22.5+, zero dependencies, ESM only, node:sqlite
+ENTRY: bin/cli.mjs → src/server.mjs
 
-STEP 2: Clone repository
-  RUN: git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
-  RUN: cd oh-my-opensession
+PROVIDERS:
+  opencode   — SQLite DB at ~/.local/share/opencode/opencode.db (read-only)
+  claude-code — JSONL files at ~/.claude/projects/**/claude.jsonl
+  codex      — JSON files at ~/.codex/sessions/*/session.json
+  gemini     — JSON files at ~/.gemini/tmp/*/gemini_history_aistudio.json
 
-STEP 3: Start server
-   RUN: npm start
-   OR:  node bin/cli.mjs [options]
-   EXPECT OUTPUT: "OpenSession running at http://localhost:3456"
-   ON SUCCESS: Open http://localhost:3456 in browser
+ARCHITECTURE:
+  src/providers/interface.mjs — ProviderAdapter interface
+  src/providers/*/adapter.mjs — Per-provider implementation
+  src/index-db.mjs — Cross-provider session index (SQLite)
+  src/meta.mjs — User metadata: star, rename, soft-delete (SQLite)
+  src/server.mjs — HTTP routing with /:provider prefix
 
-STEP 4 (optional): Custom options
-  RUN: node bin/cli.mjs --port <PORT> --db <PATH> --lang <en|zh> --open
+KEY FACTS:
+  - Read-only: Never modifies AI tool databases
+  - Meta storage: ~/.config/oh-my-opensession/meta.db
+  - Zero install: Clone and run, no npm install needed
+  - ESM only: "type": "module", entry is bin/cli.mjs
+  - No build step: Pure JavaScript, no bundler
 ```
-
-### ERROR HANDLING
-
-```
-ERROR: "listen EADDRINUSE :::3456"
-  CAUSE: Port 3456 already in use
-  FIX: node bin/cli.mjs --port 3457
-
-ERROR: "Cannot find module 'node:sqlite'"
-  CAUSE: Node.js < 22.5.0
-  FIX: Upgrade Node.js to 22.5.0+
-
-ERROR: "SQLITE_CANTOPEN"
-  CAUSE: opencode.db not found at default path
-  FIX: node bin/cli.mjs --db /actual/path/to/opencode.db
-  FIND DB: find ~ -name "opencode.db" -type f 2>/dev/null
-
-ERROR: "0 sessions, 0 messages"
-  CAUSE: OpenCode not yet used, or wrong DB path
-  FIX: Use OpenCode first, or specify correct --db path
-```
-
-### KEY FACTS FOR AI AGENTS
-
-- **Read-only**: 绝不修改 OpenCode 数据库，只做 SELECT 查询
-- **Meta storage**: 收藏/重命名/删除等操作存储在独立的 `meta.db`（macOS: `~/.config/opensession/meta.db`）
-- **Zero install**: 克隆即跑，不需要 `npm install`（零依赖项目）
-- **ESM only**: 项目使用 ES Modules（`"type": "module"`），入口是 `bin/cli.mjs`
-- **No build step**: 无编译、无打包，纯原生 JavaScript
 
 </details>
 
