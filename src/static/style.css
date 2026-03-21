@@ -1065,53 +1065,14 @@ pre code.hljs {
 /* Two-column layout */
 .two-column {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 1fr;
   gap: 0;
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - 48px);
 }
-.sidebar {
-  border-right: 1px solid var(--border-color);
-  background: var(--bg-primary);
-  overflow-y: auto;
-  max-height: calc(100vh - 56px);
-  position: sticky;
-  top: 56px;
-}
-.sidebar-header {
-  padding: 16px 16px 8px;
-  position: sticky;
-  top: 0;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  z-index: 1;
-}
-.sidebar-header h3 {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-.sidebar-list {
-  padding: 8px;
-}
-.sidebar .session-card {
-  margin-bottom: 2px;
-}
-.sidebar .session-card.active {
-  background: var(--bg-secondary);
-  border-left: 3px solid var(--accent-color);
-}
+
 .main-content {
   padding: 24px;
   overflow-y: auto;
-}
-
-@media (max-width: 900px) {
-  .two-column {
-    grid-template-columns: 1fr;
-  }
-  .sidebar {
-    display: none;
-  }
 }
 
 /* === V3: 管理功能样式 === */
@@ -1369,15 +1330,6 @@ pre code.hljs {
   gap: 8px;
   flex-shrink: 0;
   margin-left: 16px;
-}
-
-/* sidebar 中不显示管理元素 */
-.sidebar .card-actions {
-  display: none;
-}
-
-.sidebar .card-checkbox {
-  display: none !important;
 }
 
 /* Toast notifications */
