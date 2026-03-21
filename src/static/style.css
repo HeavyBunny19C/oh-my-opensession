@@ -1635,6 +1635,40 @@ pre code.hljs {
   letter-spacing: 0.02em;
 }
 
+.chain-step-group {
+  margin-bottom: 4px;
+}
+
+.chain-step-header {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  list-style: none;
+}
+
+.chain-step-header::-webkit-details-marker {
+  display: none;
+}
+
+.chain-step-header::before {
+  content: "▸";
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+
+.chain-step-group[open] > .chain-step-header::before {
+  transform: rotate(90deg);
+}
+
+.chain-step-header:hover {
+  background: rgba(129, 140, 248, 0.06);
+}
+
 .chain-root {
   margin-bottom: 12px;
 }
@@ -1679,10 +1713,14 @@ pre code.hljs {
   color: var(--text-secondary);
 }
 
-.chain-label {
+.chain-label,
+.chain-name {
   color: var(--text-primary);
   font-weight: 500;
-  flex-shrink: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chain-detail {
