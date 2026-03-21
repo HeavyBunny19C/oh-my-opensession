@@ -49,6 +49,7 @@ export function layout(title, body, page = "home", { provider = null, providers 
   <div id="toast-container"></div>
   <script src="/static/app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
 </body>
 </html>`;
 }
