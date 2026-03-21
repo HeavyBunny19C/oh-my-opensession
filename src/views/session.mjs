@@ -104,14 +104,6 @@ ${actions}
 
   const body = `
 <div class="two-column" data-session-id="${escapeHtml(session.id)}" data-provider="${escapeHtml(provider)}">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <h3>${t("detail.sidebar_title")}</h3>
-    </div>
-    <div class="sidebar-list">
-      ${sidebarCards}
-    </div>
-  </aside>
   <div class="main-content">
     ${header}
     ${todoList(todos)}
