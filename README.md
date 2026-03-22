@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.5.0-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
   <img src="https://img.shields.io/badge/dependencies-0-blue?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/version-1.1.1-orange?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.2.0-orange?style=flat-square" alt="Version" />
 </p>
 
 <p align="center">
@@ -169,6 +169,7 @@ rd /s /q "%APPDATA%\oh-my-opensession"
 | | 功能 | 一句话说明 |
 |:---:|:---|:---|
 | 🔌 | **多工具支持** | OpenCode / Claude Code / Codex CLI / Gemini CLI 一站式管理 |
+| 🔍 | **智能路径检测** | 自动探测多个候选路径，支持环境变量覆盖，无需手动配置 |
 | 🌙 | **暗色模式** | 自动跟随系统，深夜 coding 不刺眼 |
 | 🖥️ | **终端美学** | 代码块卡片 + 网格背景，看着就想写代码 |
 | 🔍 | **搜索 & 筛选** | 按关键词、时间范围快速定位，告别大海捞针 |
@@ -221,7 +222,11 @@ rd /s /q "%APPDATA%\oh-my-opensession"
 | 变量 | 说明 |
 |:---|:---|
 | `PORT` | 服务端口（`--port` 优先） |
-| `SESSION_VIEWER_DB_PATH` | opencode.db 路径（`--db` 优先） |
+| `SESSION_VIEWER_DB_PATH` | opencode.db 路径（`--opencode-db` 优先） |
+| `OPENCODE_DB_PATH` | 同上（备选名） |
+| `CLAUDE_CONFIG_DIR` | Claude Code 数据目录（`--claude-dir` 优先） |
+| `CODEX_HOME` | Codex CLI 数据目录（`--codex-dir` 优先） |
+| `GEMINI_HOME` | Gemini CLI 数据目录（`--gemini-dir` 优先） |
 | `OH_MY_OPENSESSION_META_PATH` | 元数据库路径 |
 
 ---
@@ -317,6 +322,28 @@ KEY FACTS:
 ---
 
 ## 📋 更新日志
+
+### v1.2.0 — 智能路径检测 & Provider 审计修复
+
+**🔍 智能路径检测（新功能）**
+- 多路径探测机制 — 自动扫描环境变量、XDG 规范路径、dotfile、macOS `~/Library`、Windows `%AppData%` 等多个候选位置
+- 支持环境变量覆盖：`CLAUDE_CONFIG_DIR`、`CODEX_HOME`、`GEMINI_HOME`、`OPENCODE_DB_PATH`
+- 用户无需手动传参，数据放在哪都能自动找到
+
+**🔧 Provider 审计修复（Oracle 深度审查）**
+- OpenCode 搜索/统计不再泄露 subagent 会话 — 所有 SQL 加 `parent_id IS NULL`
+- OpenCode Trace token 数据修复 — 保留原始对象，用 `tokens.total` 聚合（不再强转为 0）
+- Codex 默认路径修复 — `~/.codex` 而非 `~/.codex/sessions/sessions`（双重拼接 bug）
+- Gemini 默认路径修复 — `~/.gemini` 而非 `~/.gemini/tmp/tmp`（同上）
+- Claude Code 检测改为数据目录检测 — 移除 `which claude` CLI 依赖，跨平台兼容
+- Claude Code 解析器双格式支持 — 顶层记录格式 + 嵌套 message 格式均可解析
+- 新增 `tool_use` 记录类型解析
+- 重建索引时清除旧数据 — 删除/移动的文件不再残留在索引中
+- Codex Session ID 统一 — scan/getSession/searchMessages 使用一致的 canonical ID
+
+**🚫 Subagent 过滤**
+- OpenCode 会话列表只显示用户发起的对话（`parent_id IS NULL`）— 过滤 85% 的自动化子 agent 会话
+- 搜索结果、Token 统计、模型分布均已过滤
 
 ### v1.1.1 — 安全修复 & 视觉优化
 

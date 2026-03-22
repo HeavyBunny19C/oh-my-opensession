@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.5.0-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
   <img src="https://img.shields.io/badge/dependencies-0-blue?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/v1.1.1-orange?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/v1.2.0-orange?style=flat-square" alt="Version" />
 </p>
 
 <p align="center">
@@ -200,6 +200,27 @@ KEY FACTS:
 ---
 
 ## 📋 Changelog
+
+### v1.2.0 — Smart Path Detection & Provider Audit Fixes
+
+**🔍 Smart Path Detection (New)**
+- Multi-path probe mechanism — auto-scans env vars, XDG paths, dotfiles, macOS `~/Library`, Windows `%AppData%`
+- Environment variable overrides: `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `GEMINI_HOME`, `OPENCODE_DB_PATH`
+- Zero manual configuration — data found wherever it lives
+
+**🔧 Provider Audit Fixes (Oracle Deep Review)**
+- OpenCode search/stats no longer leak subagent sessions — all queries filter `parent_id IS NULL`
+- Trace token data fixed — preserved as objects, aggregated via `tokens.total` (was coerced to 0)
+- Codex default path fixed — `~/.codex` not `~/.codex/sessions/sessions`
+- Gemini default path fixed — `~/.gemini` not `~/.gemini/tmp/tmp`
+- Claude Code detection by data directory — removed `which claude` dependency
+- Claude Code parser dual-format support — top-level + nested message records
+- Added `tool_use` record type parsing
+- Stale index entries cleared on reindex
+
+**🚫 Subagent Filtering**
+- OpenCode session list shows only user-initiated conversations — filters 85% automated subagent sessions
+- Search results, token stats, model distribution all filtered
 
 ### v1.1.1 — Security Fixes & Visual Polish
 
