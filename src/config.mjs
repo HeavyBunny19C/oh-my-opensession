@@ -34,9 +34,9 @@ function defaultCodexDir() {
 
 function defaultGeminiDir() {
   if (process.platform === "win32") {
-    return path.join(process.env.USERPROFILE || os.homedir(), ".gemini", "tmp");
+    return path.join(process.env.USERPROFILE || os.homedir(), ".gemini");
   }
-  return path.join(os.homedir(), ".gemini", "tmp");
+  return path.join(os.homedir(), ".gemini");
 }
 
 const defaults = {
@@ -86,7 +86,7 @@ Options:
   --opencode-db <path>  Path to opencode.db (alias: --db, env: SESSION_VIEWER_DB_PATH)
   --claude-dir <path>   Path to Claude CLI data dir (default: ~/.claude)
   --codex-dir <path>    Path to Codex data dir (default: ~/.codex)
-  --gemini-dir <path>   Path to Gemini data dir (default: ~/.gemini/tmp)
+  --gemini-dir <path>   Path to Gemini data dir (default: ~/.gemini)
   --reindex             Force full reindex of all providers on start
   --lang <en|zh>        UI language (default: auto-detect from LANG)
   --open                Open browser on start

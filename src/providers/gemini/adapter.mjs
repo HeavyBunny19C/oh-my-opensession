@@ -1,5 +1,4 @@
 import { existsSync, readdirSync, lstatSync } from "node:fs";
-import { execSync } from "node:child_process";
 import path from "node:path";
 import { getConfig } from "../../config.mjs";
 import { parseSession, extractMeta, dataToMessages } from "./parser.mjs";
@@ -41,7 +40,6 @@ const gemini = {
   icon: icons.gemini,
 
   detect() {
-    try { execSync("which gemini", { stdio: "ignore" }); } catch { return false; }
     return existsSync(path.join(getGeminiDir(), "tmp"));
   },
 
