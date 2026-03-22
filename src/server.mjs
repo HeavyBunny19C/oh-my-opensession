@@ -20,7 +20,7 @@ import {
 } from "./db.mjs";
 import opencodeAdapter from "./providers/opencode/adapter.mjs";
 import { getAvailableProviders, getAllProviders, getProvider } from "./providers/index.mjs";
-import { getIndexDb, upsertIndex, getIndexedSessions } from "./index-db.mjs";
+import { getIndexDb, upsertIndex, getIndexedSessions, clearIndex } from "./index-db.mjs";
 import { setLocale, getLocale } from "./i18n.mjs";
 import {
   toggleStar,
@@ -467,7 +467,9 @@ export async function startServer(config = getConfig()) {
           for await (const session of provider.scan()) {
             sessions.push(session);
           }
-          upsertIndex(provider.id, sessions);
+          clearIndex(provider.id);
+        clearIndex(provider.id);
+        upsertIndex(provider.id, sessions);
           results.push({ provider: provider.id, indexed: sessions.length, tookMs: Date.now() - startTime });
         }
         return json(res, { ok: true, results });
