@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.5.0-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
   <img src="https://img.shields.io/badge/dependencies-0-blue?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/version-1.0.0-orange?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.1.1-orange?style=flat-square" alt="Version" />
 </p>
 
 <p align="center">
@@ -208,8 +208,8 @@ rd /s /q "%APPDATA%\oh-my-opensession"
 --port <端口号>             服务端口                             3456
 --opencode-db <路径>        opencode.db 路径（别名: --db）        自动检测
 --claude-dir <路径>         Claude Code 数据目录                  ~/.claude
---codex-dir <路径>          Codex CLI 会话目录                    ~/.codex/sessions
---gemini-dir <路径>         Gemini CLI 数据目录                   ~/.gemini/tmp
+--codex-dir <路径>          Codex CLI 数据目录                    ~/.codex
+--gemini-dir <路径>         Gemini CLI 数据目录                   ~/.gemini
 --reindex                   启动时强制重建所有索引                 false
 --lang <en|zh>              界面语言                              自动检测
 --open                      启动后自动弹浏览器                    false
@@ -316,51 +316,67 @@ KEY FACTS:
 
 ---
 
-## 🗺️ Roadmap
+## 📋 更新日志
 
-> v1.0 已完成多 Provider 架构，以下是已规划但尚未实现的特性。欢迎 PR 和 Issue！
+### v1.1.1 — 安全修复 & 视觉优化
 
-**🔀 跨平台会话迁移 & 上下文注入**
-- [ ] 跨 Provider 会话导出 / 导入（OpenCode ↔ Claude Code ↔ Codex ↔ Gemini）
-- [ ] 打开会话时自动注入上下文到目标工具（一键在另一个 AI 工具中继续对话）
-- [ ] `adapter.exportSession()` 已预埋接口，返回标准化消息 + 原始数据双格式
+**🔒 安全修复**
+- 修复 Markdown 链接 XSS 漏洞 — URL scheme 白名单校验（仅允许 http/https/mailto/相对路径）
+- 服务器绑定 `127.0.0.1` — 不再监听全网段，防止局域网未授权访问
+- 请求 body 限制 1MB — 防止大 payload DoS
+- Trace API 上限 200 步 — 防止大 session 卡死浏览器
+- Provider 文件扫描跳过 symlink — 防止符号链接遍历攻击，Codex 加循环保护
+- Session ID 集中校验 — 长度限制 + 非法字符过滤
+- Mutation 前验证 session 存在 — 防止幽灵 metadata 写入
+- 错误消息泛化 — 客户端不再暴露内部错误细节
 
-**🧠 会话知识图谱**
-- [ ] 基于 `parentId` 的父子会话层级关系可视化（主任务 → 子任务 → 孙任务）
-- [ ] 会话关联图：展示 session 之间的派生关系、分支、合并
-- [ ] 项目维度聚合：按工作目录自动归组关联会话
-- [ ] `RawSession.parentId` 已预埋，OpenCode 的 `parent_id` 和 Claude Code 的 `parentSessionId` 在 v1 已采集
+**🎨 视觉优化**
+- 所有按钮/标签统一 `:focus-visible` 焦点环 + `active` 按压反馈
+- 顶栏改为 3 列 grid 布局（Logo / Provider 居中 / 操作）
+- Session 卡片加边框、标题 2 行截断、`focus-within` 显示操作
+- Trace 面板加 loading 旋转器和空状态样式
+- Trace 颜色迁移到 CSS 变量（9 个语义色 + 4 级 z-index）
+- ⚡ 按钮分离工具展开和 Trace 打开
 
-**🔮 Agent / Skill / MCP / Tool / LSP 可视化**
-- [x] 会话内调用链路树：展示 Agent 委派、Skill 触发、MCP Server 交互、Tool 执行、LSP 操作的完整思考链路
-- [x] Agent 具名化
-- [x] 按时间顺序排列，步骤可折叠，层级缩进（Agent → 子调用）
-- [ ] 节点级耗时分析优化：瀑布时间线视图
-- [ ] 思考链路回放：按时间线还原 AI 的决策过程
+### v1.1.0 — Trace 可视化 & 多 Provider 架构修复
 
-**🔌 跨 Provider 能力增强**
-- [ ] 跨 Provider 统一搜索（当前各 tab 独立搜索）
-- [ ] 跨 Provider 聚合统计面板
-- [ ] 非 OpenCode Provider 的收藏 / 重命名 / 删除（当前仅 OpenCode 支持写操作）
+**🔮 Trace 可视化（新功能）**
+- Session 详情页右侧调用链路树面板（500px，grid 布局）
+- Agent 具名化显示（Sisyphus / Momus / Explorer / Librarian / Junior）
+- 层级缩进：Agent → Skill → MCP → Tool 父子关系
+- 颜色编码：🤖Agent(粉) 🎯Skill(橙) 🧠MCP(绿) 🔧Tool(青) 📡LSP(蓝)
+- 按时间排序，步骤可折叠，底部汇总（steps · spans · cost · tokens）
 
-**⚡ 数据 & 实时性**
-- [ ] 实时文件监听（当前仅启动时索引 + 手动刷新）
-- [ ] 增量索引（仅扫描新增/变更的会话文件）
+**🔧 架构修复**
+- OpenCode 搜索/统计过滤 subagent 会话（`parent_id IS NULL`）
+- Trace token 数据修复（保留对象，用 `tokens.total` 聚合，不再强转为 0）
+- Codex 默认路径修复（`~/.codex` 而非 `~/.codex/sessions/sessions`）
+- Gemini 默认路径修复（`~/.gemini` 而非 `~/.gemini/tmp/tmp`）
+- Claude Code 检测改为数据目录检测（移除 `which claude` CLI 依赖）
+- Claude Code 解析器支持顶层记录格式 + 嵌套 message 格式
+- 新增 `tool_use` 记录类型解析
+- 重建索引时清除旧数据（防止删除的文件残留）
 
-**🧩 插件 & 扩展**
-- [ ] 运行时动态 Provider 插件加载（当前为编译时注册）
-- [ ] UI 内 Provider 设置面板（当前仅 CLI 参数 / 环境变量配置）
-- [ ] 更多 Provider：Cursor / Windsurf / Aider
+**🖥️ 界面调整**
+- 顶栏合并：Provider 标签融入顶栏（112px → 48px 单栏）
+- Provider 图标换为官方 SVG logo（OpenCode/Claude/OpenAI/Gemini）
+- Session 详情页移除左侧 sidebar，全宽布局
+- Session header 紧凑化（metadata 压缩为单行）
+- 所有 Provider 始终显示，未安装的灰显
+- 响应式断点（768px/480px）
 
-**架构预埋（已在 v1.0 中完成）**
-- ✅ `RawSession.parentId` — 知识图谱父子关联字段
-- ✅ `Message.metadata` — Agent/Skill/MCP/Tool/LSP 原始数据保留
-- ✅ `adapter.getTrace()` — OpenCode Trace 数据提取（v1.1 已实现）
-- ✅ `adapter.exportSession()` — 跨平台迁移导出接口存根
-- ✅ `session_index` 复合主键 `(provider, session_id)` — 跨 Provider 数据隔离
+### v1.0.0 — 首版发布
+
+- 多 Provider 适配器架构（OpenCode / Claude Code / Codex CLI / Gemini CLI）
+- 会话浏览、搜索、筛选（按时间范围）
+- 会话收藏、重命名、软删除、批量操作（OpenCode）
+- Token 消耗统计（趋势图 + 模型分布）
+- Markdown / JSON 导出
+- 暗色/亮色主题自动跟随
+- 中英双语 i18n
+- 零外部依赖，纯 Node.js
 
 ---
-
 
 ## 📄 许可证
 

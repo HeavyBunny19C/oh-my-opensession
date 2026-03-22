@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.5.0-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
   <img src="https://img.shields.io/badge/dependencies-0-blue?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/v1.0.0-orange?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/v1.1.1-orange?style=flat-square" alt="Version" />
 </p>
 
 <p align="center">
@@ -175,7 +175,7 @@ See [CONTRIBUTING-PROVIDER.md](./docs/CONTRIBUTING-PROVIDER.md) for a step-by-st
 <summary>🤖 <strong>AI Agent Context</strong> (click to expand)</summary>
 
 ```
-PROJECT: OpenSession v1.0.0
+PROJECT: OpenSession v1.1.1
 PURPOSE: Multi-provider AI session viewer (web UI)
 STACK: Node.js ≥22.5.0, zero dependencies, ESM, SQLite (node:sqlite)
 PROVIDERS: OpenCode (read-write), Claude Code (read-only), Codex CLI (read-only), Gemini CLI (read-only)
@@ -199,47 +199,65 @@ KEY FACTS:
 
 ---
 
-## 🗺️ Roadmap
+## 📋 Changelog
 
-> v1.0 ships with multi-provider architecture. Below are planned but not yet implemented features. PRs and Issues welcome!
+### v1.1.1 — Security Fixes & Visual Polish
 
-**🔀 Cross-Platform Session Migration & Context Injection**
-- [ ] Cross-provider session export / import (OpenCode ↔ Claude Code ↔ Codex ↔ Gemini)
-- [ ] Auto-inject context into target tool when opening a session (one-click to continue a conversation in another AI tool)
-- [ ] `adapter.exportSession()` interface pre-seeded — returns normalized messages + raw data in dual format
+**🔒 Security**
+- Markdown link XSS fix — URL scheme whitelist (http/https/mailto/relative only)
+- Server binds to `127.0.0.1` — no LAN exposure
+- Request body capped at 1MB — DoS prevention
+- Trace API capped at 200 steps — browser freeze prevention
+- Symlink skipping in file-based providers — traversal attack prevention
+- Session ID validation — length + character sanitization
+- Session existence check before metadata mutations
+- Error messages sanitized — no internal details exposed to client
 
-**🧠 Session Knowledge Graph**
-- [ ] Parent-child session hierarchy visualization (main task → subtask → sub-subtask)
-- [ ] Session relation graph: derivation, branching, merging between sessions
-- [ ] Project-level aggregation: auto-group related sessions by working directory
-- [ ] `RawSession.parentId` pre-seeded — OpenCode's `parent_id` and Claude Code's `parentSessionId` already collected in v1
+**🎨 Visual Polish**
+- Unified `:focus-visible` ring + `active` feedback on all interactive elements
+- Topbar 3-column grid layout (Logo / Providers centered / Actions)
+- Session card borders, 2-line title clamp, `focus-within` action reveal
+- Trace panel loading spinner + empty state
+- Trace colors migrated to CSS variables (9 semantic + 4 z-index levels)
+- ⚡ Dedicated trace button separates tool expansion from trace opening
 
-**🔮 Agent / Skill / MCP / Tool / LSP Visualization**
-- [x] In-session call chain tree: Agent delegations, Skill triggers, MCP Server interactions, Tool executions, LSP operations
-- [x] Named agents: Sisyphus / Momus / Explorer / Librarian / Junior
-- [x] Chronological ordering, collapsible steps, hierarchical indent (Agent → children)
-- [ ] Per-node timing waterfall view
-- [ ] Thinking chain replay on timeline
+### v1.1.0 — Trace Visualization & Provider Fixes
 
-**🔌 Cross-Provider Enhancements**
-- [ ] Unified search across all providers (currently per-tab only)
-- [ ] Aggregated stats dashboard across providers
-- [ ] Star / rename / delete for non-OpenCode providers (currently OpenCode only for write ops)
+**🔮 Trace Visualization (New Feature)**
+- Call chain tree panel in session detail (500px, grid layout)
+- Named agents: Sisyphus / Momus / Explorer / Librarian / Junior
+- Hierarchical indent: Agent → Skill → MCP → Tool parent-child
+- Color coded: 🤖Agent(pink) 🎯Skill(orange) 🧠MCP(green) 🔧Tool(cyan) 📡LSP(blue)
+- Chronological ordering, collapsible steps, summary footer
 
-**⚡ Data & Real-time**
-- [ ] Real-time file watching (currently reindex on launch + manual refresh)
-- [ ] Incremental indexing (scan only new/changed session files)
+**🔧 Provider Fixes**
+- OpenCode search/stats now filter subagent sessions (`parent_id IS NULL`)
+- Trace token data preserved as objects (was coerced to 0)
+- Codex default path fixed (`~/.codex` not `~/.codex/sessions/sessions`)
+- Gemini default path fixed (`~/.gemini` not `~/.gemini/tmp/tmp`)
+- Claude Code detection by data directory (removed `which claude` dependency)
+- Claude Code parser supports both top-level and nested record formats
+- Added `tool_use` record type parsing
+- Stale index entries cleared on reindex
 
-**🧩 Plugins & Extensibility**
-- [ ] Runtime dynamic provider plugin loading (currently compile-time registered)
-- [ ] In-UI provider settings panel (currently CLI flags / env vars only)
-- [ ] More providers: Cursor / Windsurf / Aider
+**🖥️ UI Changes**
+- Merged topbar: provider tabs inline (112px → 48px single bar)
+- Official SVG logos (OpenCode/Claude/OpenAI/Gemini)
+- Session detail sidebar removed, full-width layout
+- Compact session header (metadata in single line)
+- All providers always shown, unavailable ones grayed out
+- Responsive breakpoints (768px/480px)
 
-**Architecture Pre-seeded in v1.0**
-- ✅ `RawSession.parentId` — knowledge graph parent-child linking field
-- ✅ `Message.metadata` — Agent/Skill/MCP/Tool/LSP raw data preserved
-- ✅ `adapter.exportSession()` — cross-platform migration export interface stub
-- ✅ `session_index` composite PK `(provider, session_id)` — cross-provider data isolation
+### v1.0.0 — Initial Release
+
+- Multi-provider adapter architecture (OpenCode / Claude Code / Codex CLI / Gemini CLI)
+- Session browsing, search, time-range filtering
+- Star, rename, soft-delete, batch operations (OpenCode)
+- Token usage stats (trend chart + model distribution)
+- Markdown / JSON export
+- Dark/light theme auto-detection
+- Chinese/English i18n
+- Zero external dependencies
 
 ---
 
